@@ -1,0 +1,21 @@
+# IDE & OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+*.log
+
+# Build & Dependencies
+target/
+backend/target/
+frontend/node_modules/
+frontend/.next/
+frontend/build/
+frontend/dist/
+
+# Env & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
