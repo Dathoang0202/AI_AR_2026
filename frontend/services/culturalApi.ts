@@ -16,16 +16,17 @@ export interface CulturalItemResponse {
   historicalPeriod?: string;
   description: string;
   significance?: string;
+  imageUrl?: string;
   sources: CulturalSourceResponse[];
 }
 
-export async function getCulturalItems(category?: string): Promise<ApiResponse<CulturalItemResponse[]>> {
+export async function getCulturalItems(category?: string, signal?: AbortSignal): Promise<ApiResponse<CulturalItemResponse[]>> {
   const query = category ? `?category=${encodeURIComponent(category)}` : '';
-  return fetchApi<CulturalItemResponse[]>(`/cultural-items${query}`, { method: 'GET' });
+  return fetchApi<CulturalItemResponse[]>(`/cultural-items${query}`, { method: 'GET', signal });
 }
 
-export async function getCulturalItemById(id: number): Promise<ApiResponse<CulturalItemResponse>> {
-  return fetchApi<CulturalItemResponse>(`/cultural-items/${id}`, { method: 'GET' });
+export async function getCulturalItemById(id: number, signal?: AbortSignal): Promise<ApiResponse<CulturalItemResponse>> {
+  return fetchApi<CulturalItemResponse>(`/cultural-items/${id}`, { method: 'GET', signal });
 }
 
 export async function searchCulturalItems(query: string): Promise<ApiResponse<CulturalItemResponse[]>> {
