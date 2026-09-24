@@ -6,7 +6,21 @@ import { useAuth } from '@/context/AuthContext';
 import { validateCulturalOutfit, saveOutfit } from '@/services/outfitApi';
 import { CulturalValidationResponse } from '@/types';
 import { VirtualMannequin } from '@/components/VirtualMannequin';
-import { Palette, ShieldCheck, Bookmark, CheckCircle, AlertTriangle, AlertCircle, Loader2, Shirt, ExternalLink } from 'lucide-react';
+import {
+  Palette,
+  ShieldCheck,
+  Bookmark,
+  CheckCircle,
+  AlertTriangle,
+  AlertCircle,
+  Loader2,
+  Shirt,
+  ExternalLink,
+  RefreshCw,
+  Info,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 
 function StudioContent() {
   const searchParams = useSearchParams();
@@ -19,7 +33,14 @@ function StudioContent() {
   const [occasion, setOccasion] = useState('Lễ cưới truyền thống');
   const [region, setRegion] = useState('Miền Trung (Hoàng gia Huế)');
   const [style, setStyle] = useState('Cổ điển Hoàng gia');
-  const [selectedAccessories, setSelectedAccessories] = useState<string[]>(['Khăn đóng chỉ vàng', 'Guốc thêu']);
+  const [gender, setGender] = useState<'female' | 'male'>('female');
+  const [selectedAccessories, setSelectedAccessories] = useState<string[]>([
+    'Khăn đóng chỉ vàng',
+    'Guốc thêu',
+  ]);
+
+  // Toggle Visibility for Middle Studio Canvas (Ẩn / Hiện Studio Trung Tâm)
+  const [isStudioVisible, setIsStudioVisible] = useState<boolean>(true);
 
   // Validation response state
   const [validating, setValidating] = useState(false);
@@ -71,7 +92,7 @@ function StudioContent() {
     if (styleParam) setStyle(styleParam);
   }, [searchParams]);
 
-  // Automatic trigger cultural validation on outfit change
+  // Automatic trigger cultural validation on outfit/gender change
   const handleValidate = async () => {
     setValidating(true);
     try {
@@ -80,6 +101,7 @@ function StudioContent() {
         color: selectedColor,
         occasion,
         region,
+        gender,
         accessories: selectedAccessories,
       });
 
@@ -95,13 +117,29 @@ function StudioContent() {
 
   useEffect(() => {
     handleValidate();
-  }, [primaryGarment, selectedColor, occasion, region, selectedAccessories]);
+  }, [primaryGarment, selectedColor, occasion, region, gender, selectedAccessories]);
 
   const toggleAccessory = (acc: string) => {
     if (selectedAccessories.includes(acc)) {
       setSelectedAccessories(selectedAccessories.filter((a) => a !== acc));
     } else {
       setSelectedAccessories([...selectedAccessories, acc]);
+    }
+  };
+
+  // Auto-Fix 1-click feature for Cultural Violations
+  const handleAutoFix = () => {
+    if (primaryGarment === 'Áo Nhật Bình' && gender === 'male') {
+      setGender('female');
+    }
+    if (gender === 'male') {
+      setSelectedAccessories((prev) => prev.filter((a) => !a.includes('Mấn')));
+    }
+    if (selectedColor === 'Màu Trắng Tơ Tằm' && occasion.includes('cưới')) {
+      setSelectedColor('Màu Đỏ Nhạt');
+    }
+    if (primaryGarment === 'Áo Nhật Bình' && occasion.includes('hằng ngày')) {
+      setOccasion('Lễ cưới truyền thống');
     }
   };
 
@@ -140,28 +178,41 @@ function StudioContent() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6">
+      {/* Top Action Header Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-amber-200 shadow-sm">
         <div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-amber-100 border border-amber-300 rounded-full text-amber-900 text-xs font-semibold">
             <Palette className="w-3.5 h-3.5" />
-            <span>Studio Phối Đồ Tương Tác</span>
+            <span>Phòng Thay Đồ Ảo & Thẩm Định Nghi Lễ</span>
           </div>
-          <h1 className="text-3xl font-serif font-bold text-red-950 mt-1">Outfit Customization Studio</h1>
+          <h1 className="text-3xl font-serif font-bold text-red-950 mt-1">
+            Studio Phối Đồ Việt Phục
+          </h1>
+          <p className="text-xs text-stone-500 mt-1">
+            Thiết kế y phục cổ truyền với ma-nơ-canh ảo trung tâm và trí tuệ thẩm định di sản real-time.
+          </p>
         </div>
 
-        <button
-          onClick={handleSaveOutfit}
-          disabled={saving}
-          className="px-6 py-3 bg-gradient-to-r from-red-800 to-amber-700 hover:from-red-900 hover:to-amber-800 text-white font-bold rounded-xl shadow-md transition-all flex items-center space-x-2 disabled:opacity-50"
-        >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Bookmark className="w-4 h-4" />
-          )}
-          <span>{isAuthenticated ? 'Lưu Phối Đồ Vào Lookbook' : 'Đăng nhập để Lưu Phối Đồ'}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Toggle Button: Show / Hide Central Mannequin Studio */}
+          <button
+            onClick={() => setIsStudioVisible(!isStudioVisible)}
+            className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold rounded-xl border border-stone-300 text-xs transition-all flex items-center space-x-2"
+          >
+            {isStudioVisible ? <EyeOff className="w-4 h-4 text-stone-600" /> : <Eye className="w-4 h-4 text-amber-700" />}
+            <span>{isStudioVisible ? 'Ẩn Studio Trung Tâm' : 'Hiện Ma-nơ-canh Studio'}</span>
+          </button>
+
+          <button
+            onClick={handleSaveOutfit}
+            disabled={saving}
+            className="px-6 py-3 bg-gradient-to-r from-red-800 to-amber-700 hover:from-red-900 hover:to-amber-800 text-white font-bold rounded-xl shadow-md transition-all flex items-center space-x-2 disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bookmark className="w-4 h-4" />}
+            <span>{isAuthenticated ? 'Lưu Phối Đồ Vào Lookbook' : 'Đăng nhập để Lưu Phối Đồ'}</span>
+          </button>
+        </div>
       </div>
 
       {saveSuccessMsg && (
@@ -178,9 +229,16 @@ function StudioContent() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Customization Workspace - Left (2 cols) */}
-        <div className="lg:col-span-2 space-y-6 bg-white p-6 md:p-8 rounded-2xl border border-amber-200 shadow-sm">
+      {/* DYNAMIC LAYOUT: SMOOTH TRANSITION BETWEEN 3-COLUMN CENTRAL STUDIO AND CLEAN 2-COLUMN VIEW */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* ========================================================= */}
+        {/* COLUMN 1: LEFT CONTROLS WORKSPACE (Adapts to 4 or 6 Cols) */}
+        {/* ========================================================= */}
+        <div className={`${isStudioVisible ? 'lg:col-span-4' : 'lg:col-span-6'} space-y-6 bg-white p-6 rounded-2xl border border-amber-200 shadow-sm transition-all duration-500`}>
+          <h2 className="font-serif font-bold text-lg text-stone-900 pb-2 border-b border-stone-100">
+            1. Tùy Chỉnh Y Phục & Phụ Kiện
+          </h2>
+
           {/* Outfit Name Input */}
           <div>
             <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
@@ -190,16 +248,16 @@ function StudioContent() {
               type="text"
               value={outfitName}
               onChange={(e) => setOutfitName(e.target.value)}
-              className="w-full px-4 py-2.5 border border-stone-300 rounded-xl font-serif font-bold text-stone-900 text-lg focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-4 py-2 border border-stone-300 rounded-xl font-serif font-bold text-stone-900 text-base focus:ring-2 focus:ring-amber-500 outline-none"
             />
           </div>
 
           {/* Garment Selection */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
-              1. Chọn Loại Y Phục Chống
+              Chọn Loại Cổ Phục / Y Phục Chính
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {garmentOptions.map((g) => (
                 <button
                   key={g}
@@ -220,9 +278,9 @@ function StudioContent() {
           {/* Color Palette Picker */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
-              2. Tông Màu Chủ Đạo
+              Tông Màu Chủ Đạo
             </label>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2.5">
               {colorOptions.map((c) => (
                 <button
                   key={c.label}
@@ -233,7 +291,10 @@ function StudioContent() {
                       : 'border-stone-200 bg-stone-50 text-stone-700 hover:border-stone-300'
                   }`}
                 >
-                  <span className="w-4 h-4 rounded-full border border-stone-300" style={{ backgroundColor: c.hex }}></span>
+                  <span
+                    className="w-4 h-4 rounded-full border border-stone-300"
+                    style={{ backgroundColor: c.hex }}
+                  ></span>
                   <span>{c.label}</span>
                 </button>
               ))}
@@ -243,7 +304,7 @@ function StudioContent() {
           {/* Accessories Selection */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
-              3. Chọn Phụ Kiện Kèm Theo
+              Chọn Phụ Kiện Đi Kèm
             </label>
             <div className="flex flex-wrap gap-2">
               {accessoryOptions.map((acc) => {
@@ -258,7 +319,8 @@ function StudioContent() {
                         : 'border-stone-200 bg-stone-50 text-stone-700 hover:border-stone-300'
                     }`}
                   >
-                    {isSelected ? '✓ ' : '+ '}{acc}
+                    {isSelected ? '✓ ' : '+ '}
+                    {acc}
                   </button>
                 );
               })}
@@ -266,7 +328,7 @@ function StudioContent() {
           </div>
 
           {/* Occasion & Region Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-stone-100">
+          <div className="space-y-3 pt-3 border-t border-stone-100">
             <div>
               <label className="block text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-1">
                 Bối Cảnh Nghi Lễ
@@ -292,32 +354,46 @@ function StudioContent() {
                 onChange={(e) => setRegion(e.target.value)}
                 className="w-full p-2 border border-stone-300 rounded-lg text-xs"
               >
-                <option value="Miền Bắc">Miền Bắc</option>
+                <option value="Miền Bắc">Miền Bắc (Thăng Long / Phố cổ)</option>
                 <option value="Miền Trung (Hoàng gia Huế)">Miền Trung (Hoàng gia Huế)</option>
-                <option value="Miền Nam">Miền Nam</option>
+                <option value="Miền Nam">Miền Nam (Nhà rường / Sông nước)</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Virtual Mannequin & Real-time Cultural Validation Card - Right (1 col) */}
-        <div className="space-y-6">
-          {/* Virtual Mannequin Rendering */}
-          <VirtualMannequin
-            garment={primaryGarment}
-            colorName={selectedColor}
-            colorHex={colorOptions.find((c) => c.label === selectedColor)?.hex || '#C0392B'}
-            accessories={selectedAccessories}
-            region={region}
-            occasion={occasion}
-            isCompliant={validationResult?.status === 'COMPLIANT'}
-          />
+        {/* ========================================================= */}
+        {/* COLUMN 2: CENTER VIRTUAL MANNEQUIN FITTING STUDIO (5 Cols - TOGGLEABLE) */}
+        {/* ========================================================= */}
+        {isStudioVisible && (
+          <div className="lg:col-span-5 space-y-4 transition-all duration-500">
+            <VirtualMannequin
+              garment={primaryGarment}
+              colorName={selectedColor}
+              colorHex={colorOptions.find((c) => c.label === selectedColor)?.hex || '#C0392B'}
+              accessories={selectedAccessories}
+              region={region}
+              occasion={occasion}
+              style={style}
+              gender={gender}
+              onGenderChange={(g) => setGender(g)}
+              validationResult={validationResult}
+              onAutoFix={handleAutoFix}
+            />
+          </div>
+        )}
 
+        {/* ========================================================= */}
+        {/* COLUMN 3: RIGHT CULTURAL VALIDATION & CITATIONS CARD (Adapts to 3 or 6 Cols) */}
+        {/* ========================================================= */}
+        <div className={`${isStudioVisible ? 'lg:col-span-3' : 'lg:col-span-6'} space-y-6 transition-all duration-500`}>
           <div className="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-5 h-5 text-amber-700" />
-                <h3 className="font-serif font-bold text-base text-stone-900">Kiểm Định Chuẩn Mực Văn Hóa</h3>
+                <h3 className="font-serif font-bold text-base text-stone-900">
+                  Thẩm Định Di Sản
+                </h3>
               </div>
               {validating && <Loader2 className="w-4 h-4 animate-spin text-amber-700" />}
             </div>
@@ -326,39 +402,75 @@ function StudioContent() {
               <div className="space-y-4">
                 {/* Status Badge */}
                 <div
-                  className={`p-3 rounded-xl border flex items-center space-x-2 text-xs font-bold ${
+                  className={`p-3.5 rounded-xl border flex items-start space-x-2.5 text-xs font-bold ${
                     validationResult.status === 'COMPLIANT'
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
                       : validationResult.status === 'CAUTION'
-                      ? 'bg-amber-50 border-amber-300 text-amber-900'
-                      : 'bg-red-50 border-red-300 text-red-900'
+                      ? 'bg-amber-50 border-amber-300 text-amber-950'
+                      : 'bg-red-50 border-red-300 text-red-950'
                   }`}
                 >
-                  {validationResult.status === 'COMPLIANT' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
-                  {validationResult.status === 'CAUTION' && <AlertTriangle className="w-4 h-4 text-amber-600" />}
-                  {validationResult.status === 'NON_COMPLIANT' && <AlertCircle className="w-4 h-4 text-red-600" />}
-                  <span>
-                    Trạng thái: {validationResult.status === 'COMPLIANT' ? 'Phù hợp nghi thức' : validationResult.status === 'CAUTION' ? 'Lưu ý bối cảnh' : 'Chưa phù hợp quy chuẩn'}
-                  </span>
+                  {validationResult.status === 'COMPLIANT' && (
+                    <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  )}
+                  {validationResult.status === 'CAUTION' && (
+                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  )}
+                  {validationResult.status === 'NON_COMPLIANT' && (
+                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <p className="font-serif font-bold">
+                      {validationResult.status === 'COMPLIANT'
+                        ? '✓ Phù hợp nghi thức di sản'
+                        : validationResult.status === 'CAUTION'
+                        ? '⚠️ Cảnh báo bối cảnh văn hóa'
+                        : '❌ Vi phạm quy chuẩn nghi lễ'}
+                    </p>
+                    {validationResult.status === 'NON_COMPLIANT' && (
+                      <p className="text-[10px] text-red-800 font-normal mt-0.5">
+                        Phát hiện điểm chưa chuẩn mực lịch sử.
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Issues if any */}
+                {/* Violation Issues Display */}
                 {validationResult.issues && validationResult.issues.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-red-800">Lưu ý & Khuyến nghị:</p>
-                    <ul className="list-disc list-inside text-xs text-red-700 space-y-1">
+                  <div className="p-3.5 bg-red-50/90 rounded-xl border border-red-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-red-900 flex items-center space-x-1">
+                        <AlertCircle className="w-3.5 h-3.5 text-red-700" />
+                        <span>Chi tiết điểm Vi Phạm / Cảnh Báo:</span>
+                      </p>
+                    </div>
+                    <ul className="list-disc list-inside text-xs text-red-800 space-y-1.5 leading-relaxed">
                       {validationResult.issues.map((iss, idx) => (
-                        <li key={idx}>{iss}</li>
+                        <li key={idx} className="font-medium">
+                          {iss}
+                        </li>
                       ))}
                     </ul>
+
+                    {/* 1-Click Auto-Fix Button */}
+                    <button
+                      onClick={handleAutoFix}
+                      className="w-full mt-2 py-2 bg-gradient-to-r from-red-800 to-amber-700 hover:from-red-900 hover:to-amber-800 text-amber-100 font-bold rounded-lg text-xs shadow transition-all flex items-center justify-center space-x-1.5"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Tự Động Sửa Cho Chuẩn Văn Hóa</span>
+                    </button>
                   </div>
                 )}
 
                 {/* Cultural Notes */}
                 {validationResult.notes && validationResult.notes.length > 0 && (
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-stone-800">Ghi chú di sản:</p>
-                    <div className="p-3 bg-stone-50 rounded-xl space-y-1.5 text-xs text-stone-600 border border-stone-200">
+                    <p className="text-xs font-bold text-stone-800 flex items-center space-x-1">
+                      <Info className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Ghi chú tri thức cổ phục:</span>
+                    </p>
+                    <div className="p-3 bg-stone-50 rounded-xl space-y-1 text-xs text-stone-600 border border-stone-200">
                       {validationResult.notes.map((note, idx) => (
                         <p key={idx}>• {note}</p>
                       ))}
@@ -366,22 +478,27 @@ function StudioContent() {
                   </div>
                 )}
 
-                {/* Sources & Citations */}
+                {/* Historical Sources & Citations */}
                 {validationResult.sources && validationResult.sources.length > 0 && (
                   <div className="space-y-2 pt-2 border-t border-stone-100">
-                    <p className="text-[11px] font-bold text-stone-700 uppercase tracking-wider">Trích dẫn sử liệu xác thực:</p>
+                    <p className="text-[11px] font-bold text-stone-700 uppercase tracking-wider">
+                      Trích dẫn sử liệu xác thực:
+                    </p>
                     {validationResult.sources.map((src, idx) => (
-                      <div key={idx} className="p-2.5 bg-amber-50/60 rounded-lg border border-amber-200 text-xs space-y-0.5">
+                      <div
+                        key={idx}
+                        className="p-2.5 bg-amber-50/70 rounded-lg border border-amber-200 text-xs space-y-0.5"
+                      >
                         <p className="font-bold text-amber-950">{src.title}</p>
-                        <p className="text-[10px] text-stone-500">NXB/Tác giả: {src.publisher}</p>
+                        <p className="text-[10px] text-stone-500">Tác giả/NXB: {src.publisher}</p>
                         {src.url && (
                           <a
                             href={src.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center text-[10px] text-amber-800 hover:underline font-semibold space-x-1"
+                            className="inline-flex items-center text-[10px] text-amber-800 hover:underline font-semibold space-x-1 mt-1"
                           >
-                            <span>Xem tham khảo</span>
+                            <span>Xem tham khảo sử liệu</span>
                             <ExternalLink className="w-2.5 h-2.5" />
                           </a>
                         )}
@@ -391,7 +508,7 @@ function StudioContent() {
                 )}
               </div>
             ) : (
-              <p className="text-xs text-stone-500 italic">Đang cập nhật đánh giá văn hóa...</p>
+              <p className="text-xs text-stone-500 italic">Đang phân tích di sản văn hóa...</p>
             )}
           </div>
         </div>
@@ -402,12 +519,14 @@ function StudioContent() {
 
 export default function StudioPage() {
   return (
-    <Suspense fallback={
-      <div className="py-16 text-center text-stone-500 space-y-2">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-amber-700" />
-        <p className="text-xs font-medium">Đang tải Studio Phối Đồ...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="py-16 text-center text-stone-500 space-y-2">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-amber-700" />
+          <p className="text-xs font-medium">Đang khởi tạo Studio Phối Đồ Trung Tâm...</p>
+        </div>
+      }
+    >
       <StudioContent />
     </Suspense>
   );

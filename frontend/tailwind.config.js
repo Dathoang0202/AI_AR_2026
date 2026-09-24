@@ -6,6 +6,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'Be Vietnam Pro', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Playfair Display', 'Merriweather', 'serif'],
+      },
       colors: {
         vietphuc: {
           crimson: '#9B1C1C',
