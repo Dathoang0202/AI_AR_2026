@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { validateCulturalOutfit, saveOutfit } from '@/services/outfitApi';
 import { CulturalValidationResponse } from '@/types';
+import { VirtualMannequin } from '@/components/VirtualMannequin';
 import { Palette, ShieldCheck, Bookmark, CheckCircle, AlertTriangle, AlertCircle, Loader2, Shirt, ExternalLink } from 'lucide-react';
 
 function StudioContent() {
@@ -299,8 +300,19 @@ function StudioContent() {
           </div>
         </div>
 
-        {/* Real-time Cultural Validation Card - Right (1 col) */}
+        {/* Virtual Mannequin & Real-time Cultural Validation Card - Right (1 col) */}
         <div className="space-y-6">
+          {/* Virtual Mannequin Rendering */}
+          <VirtualMannequin
+            garment={primaryGarment}
+            colorName={selectedColor}
+            colorHex={colorOptions.find((c) => c.label === selectedColor)?.hex || '#C0392B'}
+            accessories={selectedAccessories}
+            region={region}
+            occasion={occasion}
+            isCompliant={validationResult?.status === 'COMPLIANT'}
+          />
+
           <div className="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <div className="flex items-center space-x-2">
