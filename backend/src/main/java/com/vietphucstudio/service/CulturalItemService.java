@@ -56,6 +56,7 @@ public class CulturalItemService {
         res.setHistoricalPeriod(item.getHistoricalPeriod());
         res.setDescription(item.getDescription());
         res.setSignificance(item.getSignificance());
+        res.setImageUrl(item.getImageUrl());
 
         if (item.getSources() != null) {
             res.setSources(item.getSources().stream()

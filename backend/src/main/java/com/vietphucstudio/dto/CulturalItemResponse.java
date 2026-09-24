@@ -12,6 +12,7 @@ public class CulturalItemResponse {
     private String description;
     private String significance;
     private List<CulturalSourceResponse> sources;
+    private String imageUrl;
 
     public CulturalItemResponse() {}
 
@@ -38,4 +39,7 @@ public class CulturalItemResponse {
 
     public List<CulturalSourceResponse> getSources() { return sources; }
     public void setSources(List<CulturalSourceResponse> sources) { this.sources = sources; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }
