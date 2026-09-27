@@ -13,6 +13,8 @@ public class CulturalValidationRequest {
     private String region;
     private List<String> accessories;
 
+    private String gender;
+
     public CulturalValidationRequest() {}
 
     public String getGarment() { return garment; }
@@ -26,6 +28,9 @@ public class CulturalValidationRequest {
 
     public String getRegion() { return region; }
     public void setRegion(String region) { this.region = region; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
     public List<String> getAccessories() { return accessories; }
     public void setAccessories(List<String> accessories) { this.accessories = accessories; }

@@ -49,6 +49,7 @@ export interface CulturalValidationRequest {
   color?: string;
   occasion?: string;
   region?: string;
+  gender?: 'female' | 'male';
   accessories?: string[];
 }
 
