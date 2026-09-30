@@ -1,6 +1,8 @@
 package com.vietphucstudio.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 
 public class OutfitPreferenceRequest {
@@ -14,8 +16,17 @@ public class OutfitPreferenceRequest {
     private List<String> preferredColors;
     private String style; // Cổ điển, Tân thời, Hoàng gia, Dân gian
     private String rentalIntent; // RENT, BUY, CUSTOMIZE
+    @Positive
+    private Long culturalItemId;
+    @Pattern(regexp = "female|male", message = "Gender must be female or male")
+    private String gender;
 
     public OutfitPreferenceRequest() {}
+
+    public Long getCulturalItemId() { return culturalItemId; }
+    public void setCulturalItemId(Long culturalItemId) { this.culturalItemId = culturalItemId; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
     public String getOccasion() { return occasion; }
     public void setOccasion(String occasion) { this.occasion = occasion; }

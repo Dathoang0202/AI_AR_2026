@@ -5,16 +5,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vietphucstudio.dto.*;
 import com.vietphucstudio.entity.Outfit;
+import com.vietphucstudio.entity.CulturalItem;
 import com.vietphucstudio.exception.BusinessRuleException;
 import com.vietphucstudio.exception.ResourceNotFoundException;
 import com.vietphucstudio.repository.OutfitRepository;
+import com.vietphucstudio.repository.CulturalItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
+import java.util.Locale;
+import static com.vietphucstudio.service.GarmentRules.normalized;
 
 @Service
 public class OutfitService {
@@ -23,57 +27,81 @@ public class OutfitService {
 
     private final OutfitRepository outfitRepository;
     private final ObjectMapper objectMapper;
+    private final CulturalItemRepository culturalItemRepository;
 
-    public OutfitService(OutfitRepository outfitRepository, ObjectMapper objectMapper) {
+    public OutfitService(OutfitRepository outfitRepository, ObjectMapper objectMapper,
+                         CulturalItemRepository culturalItemRepository) {
         this.outfitRepository = outfitRepository;
         this.objectMapper = objectMapper;
+        this.culturalItemRepository = culturalItemRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<OutfitRecommendationResponse> generateRecommendations(OutfitPreferenceRequest request) {
-        List<OutfitRecommendationResponse> list = new ArrayList<>();
-        String occasion = request.getOccasion() != null ? request.getOccasion() : "Tết / Lễ hội";
-        String region = request.getRegion() != null ? request.getRegion() : "Miền Bắc";
-        String style = request.getStyle() != null ? request.getStyle() : "Cổ điển";
-
-        if (occasion.toLowerCase().contains("cưới") || style.toLowerCase().contains("hoàng gia")) {
-            list.add(new OutfitRecommendationResponse(
-                    "Bộ Nhật Bình Hoàng Gia Huế",
-                    "Áo Nhật Bình",
-                    List.of("Áo Nhật Bình gấm thêu phượng", "Áo lót trong màu trắng", "Quần lụa trắng"),
-                    List.of("Mấn quấn chỉ vàng", "Hài thêu hoa", "Quạt xếp trầm hương"),
-                    List.of("#D4AF37", "#C0392B", "#FFFFFF"),
-                    "Áo Nhật Bình là trang phục hoàng gia triều Nguyễn, đại diện cho nét đẹp kiêu sa và quý phái.",
-                    "Triều Nguyễn (1802 - 1945)",
-                    "Phù hợp mặc trong lễ cưới truyền thống, chụp ảnh nghệ thuật hoặc dịp trọng đại."
-            ));
+        List<CulturalItem> garments = culturalItemRepository.findByCategory("GARMENT");
+        boolean male = "male".equals(request.getGender());
+        if (request.getCulturalItemId() != null) {
+            CulturalItem selected = garments.stream()
+                    .filter(item -> item.getId().equals(request.getCulturalItemId())).findFirst()
+                    .orElseThrow(() -> new BusinessRuleException("INVALID_GARMENT", "Y phục đã chọn không còn trong bảo tàng. Vui lòng chọn lại."));
+            if (!supportsGender(selected, male)) {
+                throw new BusinessRuleException("INCOMPATIBLE_GARMENT", "Y phục này đang được gợi ý cho ma-nơ-canh nữ. Hãy đổi ma-nơ-canh hoặc chọn y phục khác.");
+            }
+            garments = List.of(selected);
         }
+        List<String> accessories = culturalItemRepository.findByCategory("ACCESSORY").stream()
+                .sorted(Comparator.comparing(CulturalItem::getId))
+                .map(item -> normalized(item.getName()).contains("man") && normalized(item.getName()).contains("khan dong")
+                        ? (male ? "Khăn đóng truyền thống" : "Mấn truyền thống") : item.getName())
+                .limit(2).toList();
+        List<String> colors = request.getPreferredColors() == null ? List.of() : request.getPreferredColors().stream()
+                .filter(value -> value != null && !value.isBlank()).map(this::colorHex)
+                .filter(value -> !value.isEmpty()).distinct().limit(8).toList();
+        List<String> palette = colors.isEmpty() ? List.of("#C0392B", "#1E4D2B", "#FDFBF7") : colors;
+        return garments.stream().filter(item -> supportsGender(item, male))
+                .filter(item -> GarmentRules.supportsOccasion(item.getName(), request.getOccasion()))
+                .sorted(Comparator.<CulturalItem>comparingInt(item -> recommendationScore(item, request)).reversed()
+                        .thenComparing(CulturalItem::getId)).limit(3)
+                .map(item -> {
+                    boolean fourPanel = normalized(item.getName()).contains("tu than");
+                    OutfitRecommendationResponse result = new OutfitRecommendationResponse(
+                            "Phối đồ cùng " + item.getName(), item.getName(),
+                            List.of(item.getName(), fourPanel ? "Yếm và váy" : "Quần lụa"), accessories, palette,
+                            item.getDescription(), item.getHistoricalPeriod(),
+                            "Phối theo phong cách " + request.getStyle() + " cho " + request.getOccasion() + " · " + request.getRegion()
+                                    + ". Mở Studio để thử màu và phụ kiện, kiểm tra bối cảnh trước khi lưu.");
+                    result.setCulturalItemId(item.getId());
+                    result.setImageUrl(item.getImageUrl());
+                    return result;
+                }).toList();
+    }
 
-        if (region.toLowerCase().contains("bắc") || style.toLowerCase().contains("cổ điển")) {
-            list.add(new OutfitRecommendationResponse(
-                    "Bộ Ngũ Thân Lễ Phục (Áo Tấc)",
-                    "Áo Tấc / Áo Ngũ Thân",
-                    List.of("Áo Tấc tay thụt lụa tơ tằm", "Quần lụa dệt chéo", "Áo lót cổ đứng"),
-                    List.of("Khăn đóng đen / mấn đen", "Guốc gỗ truyền thống", "Túi gấm gài thắt lưng"),
-                    List.of("#1A365D", "#D4AF37", "#2D3748"),
-                    "Áo Tấc là lễ phục đứng đắn của người Việt xưa, tượng trưng cho phong thái chỉn chu và tôn kính.",
-                    "Thế kỷ XVIII - XX",
-                    "Kết hợp tuyệt vời cho các buổi nghi lễ, đi chùa, dâng hương hoặc chúc Tết."
-            ));
-        }
+    private boolean supportsGender(CulturalItem item, boolean male) {
+        return GarmentRules.supportsGender(item.getName(), male);
+    }
 
-        // Always include iconic Áo Dài recommendation
-        list.add(new OutfitRecommendationResponse(
-                "Áo Dài Ngũ Thân Tân Thời",
-                "Áo Dài",
-                List.of("Áo Dài 5 thân lụa Hà Đông", "Quần lụa satin rủ"),
-                List.of("Vòng cổ ngọc trai", "Khăn lụa choàng vai", "Ví cầm tay thêu tay"),
-                List.of("#C0392B", "#F6E05E", "#FFFFFF"),
-                "Áo Dài đại diện cho sự giao thoa hoàn hảo giữa nét đài các truyền thống và sự duyên dáng hiện đại.",
-                "Đầu thế kỷ XX - Hiện đại",
-                "Thích hợp cho mọi dịp tết, dạo phố, sự kiện văn hóa và gặp gỡ trang trọng."
-        ));
+    private int recommendationScore(CulturalItem item, OutfitPreferenceRequest request) {
+        String name = normalized(item.getName());
+        String context = normalized(request.getOccasion()) + " " + normalized(request.getStyle());
+        String region = normalized(request.getRegion()).split(" \\(")[0];
+        int score = !region.isBlank() && normalized(item.getRegion()).contains(region) ? 2 : 0;
+        if (name.contains("nhat binh") && (context.contains("cuoi") || context.contains("hoang gia"))) score += 6;
+        if (name.contains("tac") && (context.contains("nghi le") || context.contains("tet") || context.contains("si phu"))) score += 6;
+        if (name.contains("tu than") && context.contains("dan gian")) score += 7;
+        if (name.contains("giao linh") && (context.contains("chup anh") || context.contains("co dien"))) score += 4;
+        if (name.contains("ao dai") && (context.contains("tan thoi") || context.contains("dao pho"))) score += 6;
+        return score;
+    }
 
-        return list;
+    private String colorHex(String value) {
+        String color = normalized(value.trim());
+        if (color.matches("#[a-f0-9]{6}")) return color.toUpperCase(Locale.ROOT);
+        if (color.contains("do")) return "#C0392B";
+        if (color.contains("vang")) return "#D4AF37";
+        if (color.contains("co vit")) return "#1E4D2B";
+        if (color.contains("trang")) return "#FFFFFF";
+        if (color.contains("lam")) return "#1A365D";
+        return "";
     }
 
     @Transactional
@@ -85,6 +113,7 @@ public class OutfitService {
         outfit.setRegion(request.getRegion());
         outfit.setStyle(request.getStyle());
         outfit.setPrimaryGarment(request.getPrimaryGarment());
+        outfit.setGender(request.getGender());
         outfit.setCulturalNotes(request.getCulturalNotes());
         outfit.setStatus("SAVED");
         if (request.getVisibility() != null) {
@@ -129,6 +158,7 @@ public class OutfitService {
         outfit.setRegion(request.getRegion());
         outfit.setStyle(request.getStyle());
         outfit.setPrimaryGarment(request.getPrimaryGarment());
+        if (request.getGender() != null) outfit.setGender(request.getGender());
         if (request.getCulturalNotes() != null) outfit.setCulturalNotes(request.getCulturalNotes());
         if (request.getVisibility() != null) outfit.setVisibility(request.getVisibility());
 
@@ -164,6 +194,7 @@ public class OutfitService {
         res.setRegion(outfit.getRegion());
         res.setStyle(outfit.getStyle());
         res.setPrimaryGarment(outfit.getPrimaryGarment());
+        res.setGender(outfit.getGender());
         res.setCulturalNotes(outfit.getCulturalNotes());
         res.setStatus(outfit.getStatus());
         res.setVisibility(outfit.getVisibility());

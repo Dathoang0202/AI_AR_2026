@@ -1,6 +1,7 @@
 package com.vietphucstudio.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
 public class CreateOutfitRequest {
@@ -19,6 +20,9 @@ public class CreateOutfitRequest {
 
     @NotBlank(message = "Primary garment is required")
     private String primaryGarment;
+
+    @Pattern(regexp = "female|male", message = "Gender must be female or male")
+    private String gender;
 
     private List<String> colors;
     private List<String> accessories;
@@ -41,6 +45,9 @@ public class CreateOutfitRequest {
 
     public String getPrimaryGarment() { return primaryGarment; }
     public void setPrimaryGarment(String primaryGarment) { this.primaryGarment = primaryGarment; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
     public List<String> getColors() { return colors; }
     public void setColors(List<String> colors) { this.colors = colors; }

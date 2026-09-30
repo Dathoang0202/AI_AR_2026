@@ -19,11 +19,13 @@ export async function recommendOutfit(
 }
 
 export async function validateCulturalOutfit(
-  payload: CulturalValidationRequest
+  payload: CulturalValidationRequest,
+  signal?: AbortSignal
 ): Promise<ApiResponse<CulturalValidationResponse>> {
   return fetchApi<CulturalValidationResponse>('/outfits/validate', {
     method: 'POST',
     body: JSON.stringify(payload),
+    signal,
   });
 }
 

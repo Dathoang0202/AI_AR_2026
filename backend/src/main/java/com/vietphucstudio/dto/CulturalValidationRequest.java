@@ -1,6 +1,7 @@
 package com.vietphucstudio.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
 public class CulturalValidationRequest {
@@ -13,6 +14,7 @@ public class CulturalValidationRequest {
     private String region;
     private List<String> accessories;
 
+    @Pattern(regexp = "female|male", message = "Gender must be female or male")
     private String gender;
 
     public CulturalValidationRequest() {}

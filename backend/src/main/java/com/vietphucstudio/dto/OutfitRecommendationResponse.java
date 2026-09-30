@@ -3,6 +3,8 @@ package com.vietphucstudio.dto;
 import java.util.List;
 
 public class OutfitRecommendationResponse {
+    private Long culturalItemId;
+    private String imageUrl;
 
     private String name;
     private String primaryGarment;
@@ -14,6 +16,11 @@ public class OutfitRecommendationResponse {
     private String stylingAdvice;
 
     public OutfitRecommendationResponse() {}
+
+    public Long getCulturalItemId() { return culturalItemId; }
+    public void setCulturalItemId(Long culturalItemId) { this.culturalItemId = culturalItemId; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public OutfitRecommendationResponse(String name, String primaryGarment, List<String> garments,
                                       List<String> accessories, List<String> colors,

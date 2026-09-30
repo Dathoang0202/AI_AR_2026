@@ -12,6 +12,7 @@ public class OutfitResponse {
     private String region;
     private String style;
     private String primaryGarment;
+    private String gender;
     private List<String> colors;
     private List<String> accessories;
     private String culturalNotes;
@@ -42,6 +43,9 @@ public class OutfitResponse {
 
     public String getPrimaryGarment() { return primaryGarment; }
     public void setPrimaryGarment(String primaryGarment) { this.primaryGarment = primaryGarment; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
     public List<String> getColors() { return colors; }
     public void setColors(List<String> colors) { this.colors = colors; }

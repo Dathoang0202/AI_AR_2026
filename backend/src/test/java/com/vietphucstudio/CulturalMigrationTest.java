@@ -18,7 +18,7 @@ class CulturalMigrationTest {
     void freshDatabaseIncludesMuseumImagesAndSources() throws SQLException {
         String url = databaseUrl();
         Flyway flyway = flyway(url);
-        assertEquals(5, flyway.migrate().migrationsExecuted);
+        assertEquals(6, flyway.migrate().migrationsExecuted);
         flyway.validate();
 
         try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
@@ -45,7 +45,7 @@ class CulturalMigrationTest {
         }
 
         Flyway flyway = flyway(url);
-        assertEquals(1, flyway.migrate().migrationsExecuted);
+        assertEquals(2, flyway.migrate().migrationsExecuted);
         flyway.validate();
 
         try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
@@ -56,6 +56,26 @@ class CulturalMigrationTest {
                     + "WHERE title = 'Additional reference' AND url = 'https://example.com/reference'"));
             assertEquals(2, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE id > 5 AND image_url IS NOT NULL"));
             assertEquals(7, count(connection, "SELECT COUNT(*) FROM cultural_sources"));
+        }
+    }
+
+    @Test
+    void upgradeKeepsOldOutfitsWithoutInventingTheirMannequinChoice() throws SQLException {
+        String url = databaseUrl();
+        Flyway.configure().dataSource(url, "sa", "").target("5").load().migrate();
+        try (Connection connection = DriverManager.getConnection(url, "sa", ""); var statement = connection.createStatement()) {
+            statement.executeUpdate("INSERT INTO users (id, username, email, password, full_name) VALUES (99, 'legacy', 'legacy@example.test', 'test', 'Legacy user')");
+            statement.executeUpdate("INSERT INTO outfits (id, user_id, name, occasion, region, style, primary_garment, colors_json, accessories_json) "
+                    + "VALUES (99, 99, 'Saved outfit', 'Tet', 'Hue', 'Classic', 'Ao Tac', '[\"#123456\"]', '[\"Fan\"]')");
+        }
+        Flyway latest = flyway(url);
+        latest.migrate();
+        latest.validate();
+        try (Connection connection = DriverManager.getConnection(url, "sa", ""); var statement = connection.createStatement()) {
+            assertEquals(1, count(connection, "SELECT COUNT(*) FROM outfits WHERE id = 99 AND gender IS NULL "
+                    + "AND name = 'Saved outfit' AND colors_json = '[\"#123456\"]' AND accessories_json = '[\"Fan\"]'"));
+            statement.executeUpdate("UPDATE outfits SET gender = 'male' WHERE id = 99");
+            assertEquals(1, count(connection, "SELECT COUNT(*) FROM outfits WHERE id = 99 AND gender = 'male'"));
         }
     }
 

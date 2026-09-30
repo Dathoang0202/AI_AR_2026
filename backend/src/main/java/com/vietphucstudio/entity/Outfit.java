@@ -37,6 +37,9 @@ public class Outfit {
     @Column(name = "primary_garment", nullable = false, length = 100)
     private String primaryGarment;
 
+    @Column(length = 6)
+    private String gender;
+
     @Column(name = "colors_json", columnDefinition = "TEXT")
     private String colorsJson;
 
@@ -92,6 +95,9 @@ public class Outfit {
 
     public String getPrimaryGarment() { return primaryGarment; }
     public void setPrimaryGarment(String primaryGarment) { this.primaryGarment = primaryGarment; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
     public String getColorsJson() { return colorsJson; }
     public void setColorsJson(String colorsJson) { this.colorsJson = colorsJson; }

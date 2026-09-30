@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, ArrowLeft, ArrowUpRight, BookOpen, Check, ChevronRight, ExternalLink, Landmark, Loader2, RotateCcw, Search, Share2, Shirt, X, ZoomIn } from 'lucide-react';
 import { CulturalItemResponse, getCulturalItemById, getCulturalItems } from '@/services/culturalApi';
-import { categoryLabel, safeSourceUrl } from '@/lib/cultural';
+import { categoryLabel, getMuseumPhoto, safeSourceUrl } from '@/lib/cultural';
+import { museumStudioHref } from '@/lib/outfit';
 import { ArtifactImage } from './ArtifactImage';
 import { ArtifactCard } from './ArtifactCard';
 
@@ -72,6 +73,7 @@ export function CulturalDetail({ id }: { id: number }) {
   </div>;
 
   const sources = item.sources || [];
+  const photo = getMuseumPhoto(item.name);
   const tabs = [ { id: 'story', label: 'Câu chuyện y phục' }, { id: 'meaning', label: 'Ý nghĩa văn hóa' }, { id: 'sources', label: `Nguồn tư liệu (${sources.length})` } ];
 
   return <>
@@ -96,7 +98,8 @@ export function CulturalDetail({ id }: { id: number }) {
         <p className="museum-detail-summary">{item.description}</p>
         <dl className="museum-specifications"><div><dt>Niên đại</dt><dd>{item.historicalPeriod || 'Đang cập nhật'}</dd></div><div><dt>Vùng văn hóa</dt><dd>{item.region || 'Đang cập nhật'}</dd></div><div><dt>Phân loại</dt><dd>{categoryLabel(item.category)}</dd></div><div><dt>Tư liệu tham khảo</dt><dd>{sources.length ? `${sources.length} nguồn được đính kèm` : 'Đang bổ sung tư liệu'}</dd></div></dl>
         <div className="museum-detail-actions">
-          <Link className="museum-button museum-button-primary" href={item.category === 'GARMENT' ? `/studio?garment=${encodeURIComponent(item.name)}` : '/studio'}><Shirt size={18} />Khám phá trong Phòng Phối Đồ <ArrowUpRight size={17} /></Link>
+          <Link className="museum-button museum-button-primary" href={museumStudioHref(item)}><Shirt size={18} />{item.category === 'GARMENT' ? 'Mặc thử trong Studio' : 'Thêm phụ kiện vào Studio'} <ArrowUpRight size={17} /></Link>
+          {item.category === 'GARMENT' && <Link className="museum-button museum-button-outline" href="/onboarding">Gợi ý theo bối cảnh <ArrowUpRight size={16} /></Link>}
           <button className="museum-button museum-button-outline" onClick={shareItem}>{shareState === 'copied' ? <Check size={17} /> : <Share2 size={17} />}{shareState === 'copied' ? 'Đã sao chép liên kết' : 'Chia sẻ tư liệu'}</button>
           <div role="status" className="museum-share-status">{shareState === 'copied' && 'Bạn có thể gửi liên kết này để chia sẻ trang phục.'}{shareState === 'manual' && <label>Sao chép liên kết để chia sẻ<input readOnly value={shareUrl} onFocus={event => event.target.select()} /></label>}</div>
         </div>
@@ -121,7 +124,13 @@ export function CulturalDetail({ id }: { id: number }) {
         {tab === 'sources' && <div><span className="museum-eyebrow">TÌM HIỂU TỪ NGUỒN GỐC</span><h3>Nguồn tư liệu tham khảo</h3>{sources.length ? <div className="museum-sources">{sources.map((source, index) => {
           const url = safeSourceUrl(source.url);
           return <div key={source.id} className="museum-source"><span className="museum-source-number">{String(index + 1).padStart(2, '0')}</span><div><h4>{source.title}</h4>{source.publisher && <p>{source.publisher}</p>}</div>{url && <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Đọc ${source.title} (mở tab mới)`}>Đọc tư liệu <ExternalLink size={15} /></a>}</div>;
-        })}</div> : <p>Nguồn tham khảo cho hiện vật này đang được bổ sung.</p>}</div>}
+        })}</div> : <p>Nguồn tham khảo cho hiện vật này đang được bổ sung.</p>}
+          {photo && <div className="museum-photo-source">
+            <span className="museum-eyebrow">NGUỒN ẢNH</span>
+            <h4><a href={photo.sourceUrl} target="_blank" rel="noopener noreferrer">{photo.title} <ExternalLink size={14} /></a></h4>
+            <p>{photo.author}{photo.license && <> · <a href={photo.licenseUrl} target="_blank" rel="noopener noreferrer">{photo.license}</a></>}</p>
+          </div>}
+        </div>}
       </div>
     </section>
 

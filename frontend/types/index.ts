@@ -31,9 +31,13 @@ export interface OutfitPreferenceRequest {
   preferredColors?: string[];
   style?: string;
   rentalIntent?: string;
+  culturalItemId?: number;
+  gender?: 'female' | 'male';
 }
 
 export interface OutfitRecommendationResponse {
+  culturalItemId: number;
+  imageUrl?: string;
   name: string;
   primaryGarment: string;
   garments: string[];
@@ -72,6 +76,7 @@ export interface CreateOutfitRequest {
   region: string;
   style: string;
   primaryGarment: string;
+  gender?: 'female' | 'male';
   colors?: string[];
   accessories?: string[];
   culturalNotes?: string;
@@ -86,6 +91,7 @@ export interface OutfitResponse {
   region: string;
   style: string;
   primaryGarment: string;
+  gender?: 'female' | 'male' | null;
   colors: string[];
   accessories: string[];
   culturalNotes?: string;

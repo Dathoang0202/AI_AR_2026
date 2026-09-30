@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { getUserOutfits, updateOutfit, deleteOutfit } from '@/services/outfitApi';
 import { OutfitResponse } from '@/types';
-import { Bookmark, Shirt, Trash2, Edit3, Loader2, AlertCircle, Plus, Globe, Lock, EyeOff, CheckCircle2, X } from 'lucide-react';
+import { Bookmark, Shirt, Loader2, AlertCircle, Plus, CheckCircle2, X } from 'lucide-react';
+import { OutfitCard } from '@/components/lookbook/OutfitCard';
 
 export default function LookbookPage() {
   const { isAuthenticated, openAuthModal } = useAuth();
@@ -33,7 +34,7 @@ export default function LookbookPage() {
         setErrorMsg(res.error?.message || 'Không thể lấy danh sách Lookbook từ máy chủ.');
       }
     } catch (err: any) {
-      setErrorMsg('Lỗi kết nối máy chủ REST API');
+      setErrorMsg('Không thể kết nối. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -51,16 +52,17 @@ export default function LookbookPage() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingOutfit) return;
+    if (!editingOutfit || !editName.trim()) return;
 
     setUpdateLoading(true);
     try {
       const res = await updateOutfit(editingOutfit.id, {
-        name: editName,
+        name: editName.trim(),
         occasion: editingOutfit.occasion,
         region: editingOutfit.region,
         style: editingOutfit.style,
         primaryGarment: editingOutfit.primaryGarment,
+        gender: editingOutfit.gender || undefined,
         colors: editingOutfit.colors,
         accessories: editingOutfit.accessories,
         culturalNotes: editingOutfit.culturalNotes,
@@ -87,6 +89,8 @@ export default function LookbookPage() {
       const res = await deleteOutfit(id);
       if (res.success) {
         setOutfits(outfits.filter((o) => o.id !== id));
+      } else {
+        alert(res.error?.message || 'Không thể xóa phối đồ.');
       }
     } catch (err) {
       alert('Không thể xóa phối đồ');
@@ -121,13 +125,14 @@ export default function LookbookPage() {
         <div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-amber-100 border border-amber-300 rounded-full text-amber-900 text-xs font-semibold">
             <Bookmark className="w-3.5 h-3.5" />
-            <span>SLICE 4 — Lookbook Cá Nhân & Quản Lý Quyền Riêng Tư</span>
+            <span>Lookbook của bạn</span>
           </div>
-          <h1 className="text-3xl font-serif font-bold text-red-950 mt-1">Danh Sách Trang Phục Đã Lưu</h1>
+          <h1 className="text-3xl font-semibold text-red-950 mt-2">Những bộ phối đã lưu</h1>
+          <p className="mt-2 text-sm text-stone-500">Chọn một bộ để tiếp tục thử màu và phụ kiện trong Studio.</p>
         </div>
 
         <Link
-          href="/studio"
+          href="/onboarding"
           className="px-4 py-2 bg-red-800 hover:bg-red-900 text-amber-200 font-bold text-xs rounded-xl shadow transition-all flex items-center space-x-1.5"
         >
           <Plus className="w-4 h-4" />
@@ -139,7 +144,7 @@ export default function LookbookPage() {
       {loading && (
         <div className="py-16 text-center text-stone-500 space-y-3">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-amber-700" />
-          <p className="text-xs">Đang tải bộ sưu tập từ máy chủ REST API...</p>
+          <p className="text-xs">Đang tải những bộ phối của bạn...</p>
         </div>
       )}
 
@@ -172,99 +177,20 @@ export default function LookbookPage() {
       {!loading && outfits.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {outfits.map((item) => (
-            <div key={item.id} className="bg-white rounded-2xl border border-amber-200 p-6 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-serif font-bold text-lg text-red-950">{item.name}</h3>
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => openEditModal(item)}
-                      className="p-1.5 text-stone-500 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors"
-                      title="Chỉnh sửa phối đồ"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-1.5 text-stone-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Xóa khỏi lookbook"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-stone-50 rounded-xl text-xs space-y-1 text-stone-700">
-                  <p><strong>Loại y phục:</strong> {item.primaryGarment}</p>
-                  <p><strong>Phong cách:</strong> {item.style}</p>
-                  <p><strong>Bối cảnh:</strong> {item.occasion}</p>
-                  <p><strong>Vùng miền:</strong> {item.region}</p>
-                </div>
-
-                {item.colors && item.colors.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-[11px] font-bold text-stone-700">Màu sắc:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {item.colors.map((c, idx) => (
-                        <span key={idx} className="text-[10px] px-2 py-0.5 bg-amber-50 text-amber-900 rounded border border-amber-200">
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {item.accessories && item.accessories.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-[11px] font-bold text-stone-700">Phụ kiện:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {item.accessories.map((acc, idx) => (
-                        <span key={idx} className="text-[10px] px-2 py-0.5 bg-stone-100 text-stone-700 rounded">
-                          {acc}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {item.culturalNotes && (
-                  <p className="text-[11px] text-stone-500 italic bg-amber-50/40 p-2 rounded border border-amber-100">
-                    "{item.culturalNotes}"
-                  </p>
-                )}
-              </div>
-
-              {/* Card Footer with Visibility Badge */}
-              <div className="pt-3 border-t border-stone-100 flex justify-between items-center text-[10px] text-stone-400">
-                <span>Lưu lúc: {new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
-                <span
-                  className={`px-2 py-0.5 rounded font-semibold flex items-center space-x-1 ${
-                    item.visibility === 'PUBLIC'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : item.visibility === 'UNLISTED'
-                      ? 'bg-amber-100 text-amber-900'
-                      : 'bg-stone-200 text-stone-700'
-                  }`}
-                >
-                  {item.visibility === 'PUBLIC' && <Globe className="w-3 h-3" />}
-                  {item.visibility === 'UNLISTED' && <EyeOff className="w-3 h-3" />}
-                  {(!item.visibility || item.visibility === 'PRIVATE') && <Lock className="w-3 h-3" />}
-                  <span>{item.visibility || 'PRIVATE'}</span>
-                </span>
-              </div>
-            </div>
+            <OutfitCard key={item.id} outfit={item} onEdit={() => openEditModal(item)} onDelete={() => handleDelete(item.id)} />
           ))}
         </div>
       )}
 
       {/* Edit Outfit Modal Dialog */}
       {editingOutfit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div role="dialog" aria-modal="true" aria-labelledby="edit-outfit-heading" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full border border-amber-200 space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-stone-100 pb-3">
-              <h3 className="font-serif font-bold text-lg text-red-950">Chỉnh Sửa Phối Đồ #{editingOutfit.id}</h3>
+              <h3 id="edit-outfit-heading" className="font-semibold text-lg text-red-950">Chỉnh sửa bộ phối</h3>
               <button
                 onClick={() => setEditingOutfit(null)}
+                aria-label="Đóng chỉnh sửa"
                 className="p-1 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100"
               >
                 <X className="w-5 h-5" />
@@ -273,11 +199,13 @@ export default function LookbookPage() {
 
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
+                <label htmlFor="lookbook-name" className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
                   Tên Phối Đồ
                 </label>
                 <input
                   type="text"
+                  id="lookbook-name"
+                  maxLength={150}
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
@@ -286,17 +214,18 @@ export default function LookbookPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
-                  Quyền Riêng Tư (Visibility)
+                <label htmlFor="lookbook-visibility" className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-1">
+                  Quyền riêng tư
                 </label>
                 <select
+                  id="lookbook-visibility"
                   value={editVisibility}
                   onChange={(e) => setEditVisibility(e.target.value as any)}
                   className="w-full p-2 border border-stone-300 rounded-lg text-xs"
                 >
-                  <option value="PRIVATE">PRIVATE — Chỉ mình tôi xem</option>
-                  <option value="PUBLIC">PUBLIC — Cùng chia sẻ công khai</option>
-                  <option value="UNLISTED">UNLISTED — Chỉ ai có link mới xem được</option>
+                  <option value="PRIVATE">Chỉ mình tôi xem</option>
+                  <option value="PUBLIC">Chia sẻ công khai</option>
+                  <option value="UNLISTED">Chỉ người có liên kết</option>
                 </select>
               </div>
 
@@ -310,7 +239,7 @@ export default function LookbookPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={updateLoading}
+                  disabled={updateLoading || !editName.trim()}
                   className="px-4 py-2 bg-red-800 hover:bg-red-900 text-amber-200 rounded-lg text-xs font-bold shadow flex items-center space-x-1"
                 >
                   {updateLoading ? (

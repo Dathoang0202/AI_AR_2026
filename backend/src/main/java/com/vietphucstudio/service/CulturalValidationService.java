@@ -8,108 +8,72 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.vietphucstudio.service.GarmentRules.normalized;
+
 @Service
 public class CulturalValidationService {
-
     public CulturalValidationResponse validateOutfit(CulturalValidationRequest request) {
         List<String> issues = new ArrayList<>();
         List<String> notes = new ArrayList<>();
         List<CulturalSourceDto> sources = new ArrayList<>();
-
-        String garment = request.getGarment() != null ? request.getGarment().toLowerCase() : "";
-        String color = request.getColor() != null ? request.getColor().toLowerCase() : "";
-        String occasion = request.getOccasion() != null ? request.getOccasion().toLowerCase() : "";
-        String genderStr = request.getGender() != null ? request.getGender().toLowerCase() : "female";
-        List<String> accessories = request.getAccessories() != null ? request.getAccessories() : List.of();
-
-        // FIX BUG: "female".contains("male") was returning true in Java!
-        // Strictly check for male vs female:
-        boolean isMale = (genderStr.equals("male") || genderStr.equals("nam")) && !genderStr.contains("female");
-
+        String garment = normalized(request.getGarment());
+        String color = normalized(request.getColor());
+        String occasion = normalized(request.getOccasion());
+        String gender = normalized(request.getGender());
+        boolean male = gender.equals("male") || gender.equals("nam");
+        List<String> accessories = request.getAccessories() == null ? List.of() : request.getAccessories();
         String status = "COMPLIANT";
 
-        // 1. GENDER VS GARMENT STRICT VIOLATION RULES
-        if (garment.contains("nhật bình") && isMale) {
+        if (!GarmentRules.supportsGender(garment, male)) {
             status = "NON_COMPLIANT";
-            issues.add("VI PHẠM QUY CHUẨN GIỚI TÍNH: Áo Nhật Bình là triều phục truyền thống dành riêng cho Phái Nữ (Hoàng Hậu, Công Chúa, Mệnh Phụ triều Nguyễn). Nam giới không mặc loại y phục này.");
-            notes.add("Gợi ý khắc phục: Đối với Ma-nơ-canh Nam, vui lòng chọn Áo Tấc (Áo Ngũ Thân tay rộng) hoặc Áo Giao Lĩnh Nam.");
-            sources.add(new CulturalSourceDto(
-                    "Khâm Định Đại Nam Hội Điển Sự Lệ - Quyển 78 (Trang phục Mệnh phụ)",
-                    "Quốc Sử Quán Triều Nguyễn",
-                    "https://vi.wikipedia.org/wiki/Nhat_Binh"
-            ));
+            issues.add(request.getGarment() + " không khớp với ma-nơ-canh " + (male ? "nam" : "nữ")
+                    + " trong cách phục dựng trang phục truyền thống đang áp dụng.");
+            notes.add("Có thể đổi y phục phù hợp hoặc đổi ma-nơ-canh. Kích thước mô phỏng vừa người không có nghĩa là phù hợp bối cảnh văn hóa.");
         }
-
-        // 2. GENDER VS ACCESSORY VIOLATION RULES
-        for (String acc : accessories) {
-            String accLower = acc.toLowerCase();
-            if (accLower.contains("mấn") && isMale) {
+        if (garment.contains("nhat binh")) {
+            notes.add("Nhật Bình gắn với trang phục phụ nữ hoàng tộc và mệnh phụ triều Nguyễn.");
+            sources.add(new CulturalSourceDto("Ba cô gái Bắc - Trung - Nam", "Bảo tàng Minh Long",
+                    "https://museum.minhlong.com/en/exhibitions/tuong-3-co-gai"));
+            if (!GarmentRules.supportsOccasion(garment, occasion)) {
                 status = "NON_COMPLIANT";
-                issues.add("VI PHẠM PHỤ KIỆN: 'Mấn thêu hoa' là phụ kiện đội đầu dành riêng cho Phái Nữ. Nam giới chuẩn mực nghi lễ chỉ đội Khăn đóng chỉ vàng hoặc Mũ mãng.");
-                notes.add("Gợi ý: Đổi phụ kiện sang Khăn đóng chỉ vàng cho Ma-nơ-canh Nam.");
+                issues.add("Nhật Bình không phù hợp với bối cảnh thể thao hoặc sinh hoạt hằng ngày trong gợi ý phục dựng này. Hãy chọn dịp lễ hoặc chụp ảnh di sản.");
             }
-        }
-
-        // 3. COLOR VS OCCASION VIOLATION RULES
-        if (garment.contains("nhật bình")) {
-            if (!isMale) {
-                notes.add("Áo Nhật Bình đại diện cho nét đẹp kiêu sa, quyền quý của nữ giới triều Nguyễn.");
-                sources.add(new CulturalSourceDto(
-                        "Ngàn Năm Áo Mũ",
-                        "Trần Quang Đức - NXB Thế Giới",
-                        "https://vi.wikipedia.org/wiki/Nhat_Binh"
-                ));
+            if ((color.contains("vang") || color.contains("gold") || color.contains("#d4af37"))
+                    && !occasion.contains("hoang gia") && !occasion.contains("trien lam")) {
+                if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+                issues.add("Cần đối chiếu sắc vàng và hoa văn với phẩm cấp, thời kỳ cụ thể nếu phục dựng Nhật Bình cung đình.");
             }
-
-            if (color.contains("vàng") || color.contains("gold") || color.contains("hoàng")) {
-                if (!occasion.contains("hoàng gia") && !occasion.contains("triển lãm")) {
-                    if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
-                    issues.add("LƯU Ý HOÀNG SẮC: Màu Hoàng Vàng (Chính sắc) trong quy chế triều Nguyễn vốn dành riêng cho Hoàng Gia / Hoàng Hậu. Khi mặc tham gia bối cảnh thông thường nên chọn tông Đỏ nhạt hoặc Xanh cổ vịt.");
-                }
-            }
-
-            if (occasion.contains("thể thao") || occasion.contains("hằng ngày")) {
-                status = "NON_COMPLIANT";
-                issues.add("VI PHẠM BỐI CẢNH: Áo Nhật Bình là trang trọng lễ phục nghi lễ, không được dùng cho các hoạt động thể thao hoặc sinh hoạt hàng ngày năng động.");
-            }
-        } else if (garment.contains("giao lĩnh")) {
-            notes.add("Áo Giao Lĩnh (cổ giao nhau) là cổ phục lâu đời phổ biến từ thời Lý - Trần - Lê.");
-            sources.add(new CulturalSourceDto(
-                    "Trang phục Việt Nam qua các thời kỳ",
-                    "NXB Văn Hóa Thông Tin",
-                    "https://vi.wikipedia.org/wiki/Trang_phuc_Viet_Nam"
-            ));
-        } else if (garment.contains("ngũ thân") || garment.contains("tấc")) {
-            notes.add("Áo Ngũ Thân tay thụt / tay rộng (Áo Tấc) tượng trưng cho đạo lý ngũ thường (Nhân - Lễ - Nghĩa - Trí - Tín) theo nho giáo.");
-            sources.add(new CulturalSourceDto(
-                    "Lịch sử Trang phục Việt Nam",
-                    "Trần Quang Đức",
-                    "https://vi.wikipedia.org/wiki/Ao_dinh"
-            ));
-        } else if (garment.contains("dài")) {
-            notes.add("Áo Dài là quốc phục mang tính biểu tượng cao của Việt Nam qua nhiều thời kỳ.");
-        }
-
-        // Color funeral / Taboo checks
-        if (color.contains("trắng") && occasion.contains("cưới")) {
+        } else if (garment.contains("tu than")) {
+            notes.add("Áo Tứ Thân và váy thuộc trang phục truyền thống của phụ nữ miền Bắc, thường phối cùng yếm.");
+            sources.add(new CulturalSourceDto("Women's Fashion — Viet's mode", "Bảo tàng Phụ nữ Việt Nam",
+                    "https://baotangphunu.org.vn/en/womens-fashion-2/"));
+        } else if (GarmentRules.isKnown(garment)) {
+            notes.add("Cần chọn đúng biến thể, niên đại và phụ kiện của y phục khi phục dựng một nghi lễ cụ thể.");
+        } else {
             if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
-            issues.add("CẢNH BÁO MÀU SẮC CƯỚI HỎI: Trong hỷ sự cưới hỏi truyền thống Việt Nam, nên ưu tiên màu Đỏ / Hoàng Vàng (Hỷ sắc). Tông màu Trắng thuần túy trong cưới hỏi cổ truyền bị hạn chế.");
+            issues.add("Y phục này chưa có đủ quy tắc đối chiếu. Chưa thể kết luận phù hợp văn hóa.");
         }
 
-        // Accessories notes & validation
-        for (String acc : accessories) {
-            String accLower = acc.toLowerCase();
-            if (accLower.contains("khăn đóng")) {
-                notes.add("Khăn đóng tôn vinh chiều cao và sự chỉnh chu trang trọng.");
-            } else if (accLower.contains("nón lá")) {
-                notes.add("Nón lá kết hợp nét dịu dàng truyền thống.");
+        for (String accessory : accessories) {
+            String name = normalized(accessory);
+            if (male && name.matches(".*\\bman\\b.*")) {
+                status = "NON_COMPLIANT";
+                issues.add("Mấn trong bộ sưu tập này được phối cho ma-nơ-canh nữ. Có thể chọn khăn đóng khi phối cho ma-nơ-canh nam.");
+            } else if (!name.contains("khan dong") && !name.matches(".*\\bman\\b.*")
+                    && !name.contains("non la") && !name.contains("vong co") && !name.contains("quat")) {
+                if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+                issues.add("Phụ kiện " + accessory + " chưa có đủ quy tắc đối chiếu văn hóa.");
             }
         }
-
-        if (issues.isEmpty() && status.equals("COMPLIANT")) {
-            notes.add("Bộ trang phục hoàn toàn tuân thủ các quy chuẩn nghi lễ và di sản văn hóa Việt Nam.");
+        if ((color.contains("trang") || color.contains("#ffffff") || color.contains("#fdfbf7")) && occasion.contains("cuoi")) {
+            if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+            issues.add("Với tông trắng trong cưới hỏi phục dựng, hãy đối chiếu phong tục vùng miền và thời kỳ; các bối cảnh cưới hiện đại có thể khác.");
         }
-
+        if (occasion.isBlank()) {
+            if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+            issues.add("Chọn dịp sử dụng để kiểm tra bối cảnh phối đồ.");
+        }
+        if (status.equals("COMPLIANT")) notes.add("Chưa phát hiện xung đột trong các quy tắc hiện có. Đây là gợi ý tham khảo, không phải chứng nhận phục dựng lịch sử.");
         return new CulturalValidationResponse(status, issues, notes, sources);
     }
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
+import { PageFrame } from '@/components/PageFrame';
 import { AuthModal } from '@/components/AuthModal';
 import { Be_Vietnam_Pro, Playfair_Display } from 'next/font/google';
 
@@ -35,10 +35,7 @@ export default function RootLayout({
       <body className={`${beVietnamPro.className} min-h-screen flex flex-col bg-amber-50/30 font-sans antialiased text-stone-900`}>
         <AuthProvider>
           <Navbar />
-          <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
-          <Footer />
+          <PageFrame>{children}</PageFrame>
           <AuthModal />
         </AuthProvider>
       </body>
