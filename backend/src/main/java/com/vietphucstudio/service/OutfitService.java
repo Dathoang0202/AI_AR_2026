@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.ArrayList;
 import static com.vietphucstudio.service.GarmentRules.normalized;
 
 @Service
@@ -49,11 +50,7 @@ public class OutfitService {
             }
             garments = List.of(selected);
         }
-        List<String> accessories = culturalItemRepository.findByCategory("ACCESSORY").stream()
-                .sorted(Comparator.comparing(CulturalItem::getId))
-                .map(item -> normalized(item.getName()).contains("man") && normalized(item.getName()).contains("khan dong")
-                        ? (male ? "Khăn đóng truyền thống" : "Mấn truyền thống") : item.getName())
-                .limit(2).toList();
+        List<CulturalItem> accessoryCatalog = culturalItemRepository.findByCategory("ACCESSORY");
         List<String> colors = request.getPreferredColors() == null ? List.of() : request.getPreferredColors().stream()
                 .filter(value -> value != null && !value.isBlank()).map(this::colorHex)
                 .filter(value -> !value.isEmpty()).distinct().limit(8).toList();
@@ -64,9 +61,12 @@ public class OutfitService {
                         .thenComparing(CulturalItem::getId)).limit(3)
                 .map(item -> {
                     boolean fourPanel = normalized(item.getName()).contains("tu than");
+                    String name = normalized(item.getName());
+                    String underlayer = fourPanel ? "Yếm và váy" : name.contains("ao ba ba") ? "Quần dài"
+                            : name.contains("trang phuc nu thai (thanh hoa)") ? "Váy và thắt lưng" : "Quần lụa";
                     OutfitRecommendationResponse result = new OutfitRecommendationResponse(
                             "Phối đồ cùng " + item.getName(), item.getName(),
-                            List.of(item.getName(), fourPanel ? "Yếm và váy" : "Quần lụa"), accessories, palette,
+                            List.of(item.getName(), underlayer), recommendedAccessories(item, request, accessoryCatalog, male), palette,
                             item.getDescription(), item.getHistoricalPeriod(),
                             "Phối theo phong cách " + request.getStyle() + " cho " + request.getOccasion() + " · " + request.getRegion()
                                     + ". Mở Studio để thử màu và phụ kiện, kiểm tra bối cảnh trước khi lưu.");
@@ -80,6 +80,39 @@ public class OutfitService {
         return GarmentRules.supportsGender(item.getName(), male);
     }
 
+    private List<String> recommendedAccessories(CulturalItem garment, OutfitPreferenceRequest request,
+                                               List<CulturalItem> catalog, boolean male) {
+        String name = normalized(garment.getName());
+        // This local Thai ensemble has no matching accessory record yet.
+        if (name.contains("trang phuc nu thai (thanh hoa)")) return List.of();
+        List<String> result = new ArrayList<>();
+        if (name.contains("ao ba ba")) {
+            addAccessory(result, catalog, "khan ran", male);
+            addAccessory(result, catalog, "non la", male);
+        } else {
+            String context = normalized(request.getOccasion());
+            boolean casual = context.contains("hang ngay") || context.contains("dao pho") || context.contains("chup anh");
+            if ((name.contains("ao dai") || name.contains("tu than")) && casual) {
+                addAccessory(result, catalog, "non la", male);
+            } else if (name.contains("ao dai") || name.contains("tu than") || name.contains("nhat binh")
+                    || name.contains("ao tac") || name.contains("ngu than")) {
+                addAccessory(result, catalog, male ? "khan dong" : "man", male);
+            }
+            addAccessory(result, catalog, "quat", male);
+        }
+        return result;
+    }
+
+    private void addAccessory(List<String> result, List<CulturalItem> catalog, String keyword, boolean male) {
+        catalog.stream().filter(item -> keyword.equals("man") ? normalized(item.getName()).matches(".*\\bman\\b.*")
+                        : normalized(item.getName()).contains(keyword))
+                .sorted(Comparator.comparing(CulturalItem::getId)).findFirst().ifPresent(item -> {
+                    String name = normalized(item.getName());
+                    result.add(name.matches(".*\\bman\\b.*") && name.contains("khan dong")
+                            ? (male ? "Khăn đóng truyền thống" : "Mấn truyền thống") : item.getName());
+                });
+    }
+
     private int recommendationScore(CulturalItem item, OutfitPreferenceRequest request) {
         String name = normalized(item.getName());
         String context = normalized(request.getOccasion()) + " " + normalized(request.getStyle());
@@ -90,6 +123,10 @@ public class OutfitService {
         if (name.contains("tu than") && context.contains("dan gian")) score += 7;
         if (name.contains("giao linh") && (context.contains("chup anh") || context.contains("co dien"))) score += 4;
         if (name.contains("ao dai") && (context.contains("tan thoi") || context.contains("dao pho"))) score += 6;
+        if (name.contains("ao ba ba") && (context.contains("dan gian") || context.contains("hang ngay"))) score += 7;
+        if (name.contains("ngu than") && name.contains("tay chen")
+                && (context.contains("si phu") || context.contains("hang ngay") || context.contains("dao pho"))) score += 6;
+        if (name.contains("trang phuc nu thai (thanh hoa)") && context.contains("dan gian")) score += 7;
         return score;
     }
 

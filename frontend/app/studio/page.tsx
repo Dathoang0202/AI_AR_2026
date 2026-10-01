@@ -13,7 +13,7 @@ import { OutfitNameEditor } from '@/components/studio/OutfitNameEditor';
 import { WardrobePicker } from '@/components/wardrobe/WardrobePicker';
 import { ColorPalette } from '@/components/wardrobe/ColorPalette';
 import { useMuseumCatalog } from '@/hooks/useMuseumCatalog';
-import { accessoryName, colorName, garmentKind, occasionOptions, regionOptions, styleOptions, toColorHex } from '@/lib/outfit';
+import { accessoryName, accessorySlot, colorName, garmentKind, occasionOptions, regionOptions, styleOptions, toColorHex } from '@/lib/outfit';
 
 function readList(value: string | null): string[] {
   if (value === null) return [];
@@ -99,7 +99,9 @@ function StudioContent() {
     if (item.category === 'GARMENT') { setGarmentId(item.id); if (!hasCustomName) setOutfitName(`Phối đồ cùng ${item.name}`); }
     else {
       const variants = [accessoryName(item, 'female'), accessoryName(item, 'male')];
-      setAccessories(previous => previous.some(name => variants.includes(name)) ? previous.filter(name => !variants.includes(name)) : [...previous, accessoryName(item, gender)]);
+      const next = accessoryName(item, gender);
+      const slot = accessorySlot(next);
+      setAccessories(previous => previous.some(name => variants.includes(name)) ? previous.filter(name => !variants.includes(name)) : [...previous.filter(name => !slot || accessorySlot(name) !== slot), next]);
     }
   }
 
@@ -115,7 +117,7 @@ function StudioContent() {
   }
 
   function autoFix() {
-    if (['nhat-binh', 'tu-than'].includes(garmentKind(primaryGarment)) && gender === 'male') {
+    if (['nhat-binh', 'tu-than', 'thai-thanh-hoa'].includes(garmentKind(primaryGarment)) && gender === 'male') {
       const replacement = catalog.items.find(item => item.category === 'GARMENT' && garmentKind(item.name) === 'ao-tac');
       if (replacement) { setGarmentId(replacement.id); if (!hasCustomName) setOutfitName(`Phối đồ cùng ${replacement.name}`); }
     }

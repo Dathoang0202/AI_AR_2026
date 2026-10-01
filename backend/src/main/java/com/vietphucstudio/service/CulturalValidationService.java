@@ -47,6 +47,22 @@ public class CulturalValidationService {
             notes.add("Áo Tứ Thân và váy thuộc trang phục truyền thống của phụ nữ miền Bắc, thường phối cùng yếm.");
             sources.add(new CulturalSourceDto("Women's Fashion — Viet's mode", "Bảo tàng Phụ nữ Việt Nam",
                     "https://baotangphunu.org.vn/en/womens-fashion-2/"));
+        } else if (garment.contains("trang phuc nu thai (thanh hoa)")) {
+            if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+            issues.add("Mô phỏng dựa trên một mẫu trang phục nữ Thái ở Thanh Hóa năm 1977, giản lược hoa văn. Cần đối chiếu tư liệu địa phương khi chọn phụ kiện hoặc phục dựng nghi lễ.");
+            notes.add("Mẫu này không đại diện cho mọi nhóm Thái. Các phụ kiện hiện có chưa được đối chiếu riêng với bộ trang phục này.");
+            sources.add(new CulturalSourceDto("Trang phục Thái, Thanh Hóa, 1977 — ảnh hiện vật", "Daderot / Bảo tàng Phụ nữ Việt Nam",
+                    "https://commons.wikimedia.org/wiki/File:Costume,_Thai,_Thanh_Hoa,_1977,_view_1,_cotton,_ikat,_patterns_woven_with_extra_threads_and_silk_embroidery_-_Vietnamese_Women%27s_Museum_-_Hanoi,_Vietnam_-_DSC03910.JPG"));
+        } else if (garment.contains("ao ba ba")) {
+            notes.add("Áo Bà Ba và quần dài gắn với sinh hoạt Nam Bộ; có thể thử cùng khăn rằn và nón lá trong gợi ý dân gian.");
+            if (occasion.contains("hoang gia") || occasion.contains("cung dinh")) {
+                if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+                issues.add("Chưa có tư liệu đối chiếu áo Bà Ba với bối cảnh cung đình đã chọn.");
+            }
+        } else if (garment.contains("ngu than") && garment.contains("tay chen")) {
+            notes.add("Ngũ thân tay chẽn có ống tay hẹp, khác áo Tấc tay thụng. Chọn biến thể nam hoặc nữ và phụ kiện theo bối cảnh phục dựng.");
+            sources.add(new CulturalSourceDto("Đưa áo dài ngũ thân sống lại bản sắc vốn có", "Báo Tin tức — TTXVN",
+                    "https://baotintuc.vn/van-hoa/ton-vinh-gia-tri-van-hoa-truyen-thong-bai-cuoi-dua-ao-dai-ngu-than-song-lai-ban-sac-von-co-20210213074311146.htm"));
         } else if (GarmentRules.isKnown(garment)) {
             notes.add("Cần chọn đúng biến thể, niên đại và phụ kiện của y phục khi phục dựng một nghi lễ cụ thể.");
         } else {
@@ -60,10 +76,20 @@ public class CulturalValidationService {
                 status = "NON_COMPLIANT";
                 issues.add("Mấn trong bộ sưu tập này được phối cho ma-nơ-canh nữ. Có thể chọn khăn đóng khi phối cho ma-nơ-canh nam.");
             } else if (!name.contains("khan dong") && !name.matches(".*\\bman\\b.*")
-                    && !name.contains("non la") && !name.contains("vong co") && !name.contains("quat")) {
+                    && !name.contains("non la") && !name.contains("vong co") && !name.contains("quat") && !name.contains("khan ran")) {
                 if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
                 issues.add("Phụ kiện " + accessory + " chưa có đủ quy tắc đối chiếu văn hóa.");
             }
+            if (name.contains("khan ran") && (garment.contains("nhat binh") || garment.contains("ao tac"))) {
+                if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+                issues.add("Khăn rằn với y phục lễ phục này là gợi ý phối sáng tạo; chưa có tư liệu để xác nhận cách phối phục dựng lịch sử.");
+            }
+        }
+        long headwearCount = accessories.stream().map(GarmentRules::normalized)
+                .filter(name -> name.contains("non la") || name.contains("khan dong") || name.matches(".*\\bman\\b.*")).count();
+        if (headwearCount > 1) {
+            if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+            issues.add("Đang chọn nhiều phụ kiện đội đầu. Chọn một món để hình mô phỏng khớp với bộ phối lưu lại.");
         }
         if ((color.contains("trang") || color.contains("#ffffff") || color.contains("#fdfbf7")) && occasion.contains("cuoi")) {
             if (!status.equals("NON_COMPLIANT")) status = "CAUTION";

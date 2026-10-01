@@ -27,6 +27,42 @@ export function getIllustration(name: string, variant: 'card' | 'detail' = 'card
 
 const museumPhotos = [
   {
+    keywords: ['ao ba ba'], src: '/images/museum/ao-ba-ba.jpg',
+    title: 'Bộ bà ba Bến Tre, 1968, tại Bảo tàng Phụ nữ Việt Nam', author: 'Daderot',
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Costume_Ba_ba,_Viet,_Ben_Tre,_1968,_industrial_fabric_-_Vietnamese_Women%27s_Museum_-_Hanoi,_Vietnam_-_DSC04104.JPG",
+    license: 'CC0 1.0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+  },
+  {
+    keywords: ['ngu than tay chen'], src: '/images/museum/ao-ngu-than-tay-chen.jpg',
+    title: 'Áo ngũ thân tay chẽn trên giá trưng bày', author: 'Hoài Giang Shop',
+    sourceUrl: 'https://hoaigiangshop.com/san-pham/ao-dai-nam/nam-truyen-thong/ao-ngu-than-ao-tac-nam-tay-chen-mau-den',
+    license: undefined, licenseUrl: undefined,
+  },
+  {
+    keywords: ['trang phuc nu thai (thanh hoa)'], src: '/images/museum/trang-phuc-nu-thai.jpg',
+    title: 'Trang phục Thái, Thanh Hóa, 1977, tại Bảo tàng Phụ nữ Việt Nam', author: 'Daderot',
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Costume,_Thai,_Thanh_Hoa,_1977,_view_1,_cotton,_ikat,_patterns_woven_with_extra_threads_and_silk_embroidery_-_Vietnamese_Women%27s_Museum_-_Hanoi,_Vietnam_-_DSC03910.JPG",
+    license: 'CC0 1.0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+  },
+  {
+    keywords: ['non la'], src: '/images/museum/non-la.jpg',
+    title: 'Nón lá Thanh Oai, 1999, tại Bảo tàng Phụ nữ Việt Nam', author: 'Daderot',
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Conical_hat,_Viet,_Thanh_Oai,_Hanoi,_1999,_palm_leaves_with_bamboo_frame_-_Vietnamese_Women%27s_Museum_-_Hanoi,_Vietnam_-_DSC03996.JPG",
+    license: 'CC0 1.0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+  },
+  {
+    keywords: ['quat xep chang son'], src: '/images/museum/quat-xep.jpg',
+    title: 'Các mẫu quạt xếp của làng nghề Chàng Sơn', author: 'Quạt Chàng Sơn · nguồn đăng ảnh',
+    sourceUrl: 'https://quatchangson.vn/vi/post/dua-quat-chang-son-vuon-xa-2.htm',
+    license: undefined, licenseUrl: undefined,
+  },
+  {
+    keywords: ['khan ran'], src: '/images/museum/khan-ran.jpg',
+    title: 'Khăn rằn Tân Châu chụp riêng', author: 'Nông Sản An Giang',
+    sourceUrl: 'https://nongsanangiang.com/khan-ran-tan-chau-an-giang',
+    license: undefined, licenseUrl: undefined,
+  },
+  {
     keywords: ['ao tac'],
     src: '/images/museum/ao-tac-display.jpg',
     title: 'Áo tấc tay thụng trên ma-nơ-canh',

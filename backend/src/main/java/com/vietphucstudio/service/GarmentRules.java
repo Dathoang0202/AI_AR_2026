@@ -22,7 +22,8 @@ final class GarmentRules {
     static boolean isKnown(String garment) {
         String name = normalized(garment);
         return name.contains("nhat binh") || name.contains("tu than") || name.contains("giao linh")
-                || name.contains("ao tac") || name.contains("ngu than") || name.contains("ao dai");
+                || name.contains("ao tac") || name.contains("ngu than") || name.contains("ao dai")
+                || name.contains("ao ba ba") || name.contains("trang phuc nu thai (thanh hoa)");
     }
 
     static boolean supportsOccasion(String garment, String occasion) {

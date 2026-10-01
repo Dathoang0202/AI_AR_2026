@@ -33,7 +33,7 @@ class CulturalValidationServiceTest {
 
     @Test
     void sharedGarmentFamiliesWorkOnBothBodiesAndMaleVariantsAreChecked() {
-        for (String garment : List.of("Áo Giao Lĩnh", "Áo Tấc (Áo Ngũ Thân Lễ Phục)", "Áo Dài")) {
+        for (String garment : List.of("Áo Giao Lĩnh", "Áo Tấc (Áo Ngũ Thân Lễ Phục)", "Áo Dài", "Áo Bà Ba", "Áo Ngũ Thân Tay Chẽn")) {
             for (String gender : List.of("female", "male")) assertEquals("COMPLIANT", service.validateOutfit(request(garment, gender)).getStatus());
         }
         assertEquals("NON_COMPLIANT", service.validateOutfit(request("Áo giao lĩnh nam", "female")).getStatus());
@@ -72,5 +72,27 @@ class CulturalValidationServiceTest {
         request.setGender("female");
         assertEquals("CAUTION", service.validateOutfit(request).getStatus());
         assertFalse(service.validateOutfit(request("Áo Tứ Thân", "male")).getSources().isEmpty());
+    }
+
+    @Test
+    void localThaiExampleRequiresSourcesAndKeepsGenderConflict() {
+        var request = request("Trang Phục Nữ Thái (Thanh Hóa)", "female");
+        assertEquals("CAUTION", service.validateOutfit(request).getStatus());
+        assertFalse(service.validateOutfit(request).getSources().isEmpty());
+        request.setGender("male");
+        assertEquals("NON_COMPLIANT", service.validateOutfit(request).getStatus());
+    }
+
+    @Test
+    void scarfAndCompetingHeadwearAreCheckedWithoutErasingOtherConflicts() {
+        var request = request("Áo Bà Ba", "male");
+        request.setAccessories(List.of("Khăn Rằn Nam Bộ", "Nón Lá"));
+        assertEquals("COMPLIANT", service.validateOutfit(request).getStatus());
+        request.setAccessories(List.of("Nón Lá", "Khăn đóng truyền thống"));
+        assertEquals("CAUTION", service.validateOutfit(request).getStatus());
+        request.setGarment("Áo Nhật Bình"); request.setAccessories(List.of("Khăn Rằn Nam Bộ"));
+        assertEquals("NON_COMPLIANT", service.validateOutfit(request).getStatus());
+        request.setGender("female");
+        assertEquals("CAUTION", service.validateOutfit(request).getStatus());
     }
 }

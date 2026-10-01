@@ -18,13 +18,15 @@ class CulturalMigrationTest {
     void freshDatabaseIncludesMuseumImagesAndSources() throws SQLException {
         String url = databaseUrl();
         Flyway flyway = flyway(url);
-        assertEquals(6, flyway.migrate().migrationsExecuted);
+        assertEquals(7, flyway.migrate().migrationsExecuted);
         flyway.validate();
 
         try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
-            assertEquals(6, count(connection, "SELECT COUNT(*) FROM cultural_items"));
-            assertEquals(6, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE image_url IS NOT NULL"));
-            assertEquals(6, count(connection, "SELECT COUNT(*) FROM cultural_sources"));
+            assertEquals(12, count(connection, "SELECT COUNT(*) FROM cultural_items"));
+            assertEquals(8, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE category = 'GARMENT'"));
+            assertEquals(4, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE category = 'ACCESSORY'"));
+            assertEquals(12, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE image_url IS NOT NULL"));
+            assertEquals(12, count(connection, "SELECT COUNT(*) FROM cultural_sources"));
             assertEquals(0, count(connection, "SELECT COUNT(*) FROM cultural_items item WHERE NOT EXISTS "
                     + "(SELECT 1 FROM cultural_sources source WHERE source.cultural_item_id = item.id)"));
         }
@@ -45,17 +47,17 @@ class CulturalMigrationTest {
         }
 
         Flyway flyway = flyway(url);
-        assertEquals(2, flyway.migrate().migrationsExecuted);
+        assertEquals(3, flyway.migrate().migrationsExecuted);
         flyway.validate();
 
         try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
-            assertEquals(7, count(connection, "SELECT COUNT(*) FROM cultural_items"));
+            assertEquals(13, count(connection, "SELECT COUNT(*) FROM cultural_items"));
             assertEquals(1, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE id = 5 "
                     + "AND description = 'Preserve this description' AND image_url IS NULL"));
             assertEquals(1, count(connection, "SELECT COUNT(*) FROM cultural_sources "
                     + "WHERE title = 'Additional reference' AND url = 'https://example.com/reference'"));
-            assertEquals(2, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE id > 5 AND image_url IS NOT NULL"));
-            assertEquals(7, count(connection, "SELECT COUNT(*) FROM cultural_sources"));
+            assertEquals(8, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE id > 5 AND image_url IS NOT NULL"));
+            assertEquals(13, count(connection, "SELECT COUNT(*) FROM cultural_sources"));
         }
     }
 
@@ -77,6 +79,27 @@ class CulturalMigrationTest {
             statement.executeUpdate("UPDATE outfits SET gender = 'male' WHERE id = 99");
             assertEquals(1, count(connection, "SELECT COUNT(*) FROM outfits WHERE id = 99 AND gender = 'male'"));
         }
+    }
+
+    @Test
+    void expandingV6KeepsCustomIdsAndExistingCatalogReferences() throws SQLException {
+        String url = databaseUrl();
+        Flyway.configure().dataSource(url, "sa", "").target("6").load().migrate();
+        try (Connection connection = DriverManager.getConnection(url, "sa", ""); var statement = connection.createStatement()) {
+            statement.executeUpdate("INSERT INTO cultural_items (id, name, category, description) VALUES (90, 'Custom item', 'ACCESSORY', 'Keep me')");
+            statement.executeUpdate("INSERT INTO cultural_sources (cultural_item_id, title, url) VALUES (90, 'Custom source', 'https://example.com/custom')");
+        }
+        Flyway latest = flyway(url);
+        assertEquals(1, latest.migrate().migrationsExecuted);
+        latest.validate();
+        try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
+            assertEquals(13, count(connection, "SELECT COUNT(*) FROM cultural_items"));
+            assertEquals(6, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE id > 90"));
+            assertEquals(1, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE id = 90 AND description = 'Keep me'"));
+            assertEquals(1, count(connection, "SELECT COUNT(*) FROM cultural_sources WHERE cultural_item_id = 90 AND title = 'Custom source'"));
+            assertEquals(6, count(connection, "SELECT COUNT(*) FROM cultural_items WHERE id <= 6"));
+        }
+        assertEquals(0, latest.migrate().migrationsExecuted);
     }
 
     private static String databaseUrl() {

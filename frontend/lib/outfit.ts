@@ -36,6 +36,9 @@ export function garmentKind(name: string) {
   if (text.includes('nhat binh')) return 'nhat-binh';
   if (text.includes('giao linh')) return 'giao-linh';
   if (text.includes('tu than')) return 'tu-than';
+  if (text.includes('ngu than') && text.includes('tay chen')) return 'ngu-than';
+  if (text.includes('ao ba ba')) return 'ba-ba';
+  if (text.includes('trang phuc nu thai (thanh hoa)')) return 'thai-thanh-hoa';
   if (text.includes('tac') || text.includes('ngu than')) return 'ao-tac';
   if (text.includes('ao dai')) return 'ao-dai';
   return 'other';
@@ -45,6 +48,14 @@ export function accessoryName(item: CulturalItemResponse, gender: 'female' | 'ma
   const name = normalizeCulturalText(item.name);
   return name.includes('man') && name.includes('khan dong')
     ? (gender === 'male' ? 'Khăn đóng truyền thống' : 'Mấn truyền thống') : item.name;
+}
+
+export function accessorySlot(name: string) {
+  const text = normalizeCulturalText(name);
+  if (text.includes('non la') || text.includes('khan dong') || /\bman\b/.test(text)) return 'headwear';
+  if (text.includes('khan ran')) return 'scarf';
+  if (text.includes('quat')) return 'fan';
+  return undefined;
 }
 
 export function museumStudioHref(item: CulturalItemResponse) {

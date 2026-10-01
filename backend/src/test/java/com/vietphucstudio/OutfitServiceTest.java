@@ -122,6 +122,43 @@ class OutfitServiceTest {
         assertThrows(BusinessRuleException.class, () -> outfitService.generateRecommendations(request));
     }
 
+    @Test
+    void newGarmentsUseContextAndMatchingAccessoriesWithoutFixedIds() {
+        CulturalItem baba = garment(71L, "Áo Bà Ba"); baba.setRegion("Miền Nam");
+        CulturalItem thai = garment(82L, "Trang Phục Nữ Thái (Thanh Hóa)"); thai.setRegion("Miền Trung (Thanh Hóa)");
+        CulturalItem nguThan = garment(93L, "Áo Ngũ Thân Tay Chẽn"); nguThan.setRegion("Toàn quốc");
+        when(culturalItemRepository.findByCategory("GARMENT")).thenReturn(List.of(garment(5L, "Áo Tứ Thân"), baba, thai, nguThan));
+        when(culturalItemRepository.findByCategory("ACCESSORY")).thenReturn(List.of(
+                garment(24L, "Mấn & Khăn Đóng Truyền Thống"), garment(25L, "Nón Lá"),
+                garment(26L, "Quạt Xếp Chàng Sơn"), garment(27L, "Khăn Rằn Nam Bộ")));
+        OutfitPreferenceRequest request = new OutfitPreferenceRequest();
+        request.setGender("female"); request.setRegion("Miền Nam");
+        request.setOccasion("Sinh hoạt hằng ngày"); request.setStyle("Dân gian Mộc mạc");
+        request.setPreferredColors(List.of("#895b3f", "#292524"));
+        var southern = outfitService.generateRecommendations(request).get(0);
+        assertEquals(71L, southern.getCulturalItemId());
+        assertEquals(List.of("Khăn Rằn Nam Bộ", "Nón Lá"), southern.getAccessories());
+        assertEquals(List.of("#895B3F", "#292524"), southern.getColors());
+        request.setRegion("Miền Trung"); request.setOccasion("Chụp ảnh di sản / nghệ thuật");
+        var local = outfitService.generateRecommendations(request).get(0);
+        assertEquals(82L, local.getCulturalItemId());
+        assertTrue(local.getAccessories().isEmpty());
+        request.setGender("male"); request.setStyle("Nho nhã Sĩ phu");
+        var male = outfitService.generateRecommendations(request);
+        assertTrue(male.stream().noneMatch(item -> item.getCulturalItemId().equals(82L)));
+        assertEquals(93L, male.get(0).getCulturalItemId());
+        assertEquals(List.of("Khăn đóng truyền thống", "Quạt Xếp Chàng Sơn"), male.get(0).getAccessories());
+        request.setCulturalItemId(82L);
+        assertThrows(BusinessRuleException.class, () -> outfitService.generateRecommendations(request));
+    }
+
+    @Test
+    void recommendationsOnlyUseAccessoriesPresentInMuseum() {
+        when(culturalItemRepository.findByCategory("GARMENT")).thenReturn(List.of(garment(71L, "Áo Bà Ba")));
+        when(culturalItemRepository.findByCategory("ACCESSORY")).thenReturn(List.of(garment(4L, "Mấn & Khăn Đóng Truyền Thống")));
+        assertTrue(outfitService.generateRecommendations(new OutfitPreferenceRequest()).get(0).getAccessories().isEmpty());
+    }
+
     private CulturalItem garment(Long id, String name) {
         CulturalItem item = new CulturalItem();
         item.setId(id); item.setName(name); item.setCategory("GARMENT");
