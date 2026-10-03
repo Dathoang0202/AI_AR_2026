@@ -1,227 +1,99 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { ArrowUpRight, Check, Info, Loader2, MapPin, Navigation, Palette, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
 import { getRentalProviders, RentalProviderResponse } from '@/services/rentalApi';
-import { MapPin, Phone, Globe, Info, Search, Loader2, AlertCircle, Tag, Navigation } from 'lucide-react';
+import { normalizeCulturalText } from '@/lib/cultural';
+import { rentalDistance, RentalPosition, startingPrice } from '@/lib/rentals';
+import { RentalProviderCard } from '@/components/rentals/RentalProviderCard';
+import './rentals.css';
 
 export default function RentalsPage() {
   const [providers, setProviders] = useState<RentalProviderResponse[]>([]);
-  const [searchCity, setSearchCity] = useState('');
-  const [selectedCity, setSelectedCity] = useState('ALL');
-
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const cityOptions = [
-    { label: 'Tất cả các tỉnh/thành', value: 'ALL' },
-    { label: 'Hà Nội', value: 'Hà Nội' },
-    { label: 'Thừa Thiên Huế', value: 'Huế' },
-    { label: 'TP. Hồ Chí Minh', value: 'Hồ Chí Minh' },
-  ];
-
-  const fetchProviders = async (city?: string) => {
-    setLoading(true);
-    setErrorMsg(null);
-    try {
-      const filterCity = city && city !== 'ALL' ? city : undefined;
-      const res = await getRentalProviders(filterCity);
-      if (res.success && res.data) {
-        setProviders(res.data);
-      } else {
-        setErrorMsg(res.error?.message || 'Không thể lấy dữ liệu điểm thuê.');
-      }
-    } catch (err) {
-      setErrorMsg('Lỗi kết nối máy chủ REST API');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [query, setQuery] = useState('');
+  const [city, setCity] = useState('ALL');
+  const [sort, setSort] = useState('default');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0);
+  const [position, setPosition] = useState<RentalPosition>();
+  const [locating, setLocating] = useState(false);
+  const [locationMessage, setLocationMessage] = useState('');
 
   useEffect(() => {
-    fetchProviders(selectedCity === 'ALL' ? undefined : selectedCity);
-  }, [selectedCity]);
+    let active = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    setLoading(true); setError('');
+    getRentalProviders(undefined, controller.signal).then(result => {
+      if (!active) return;
+      if (result.success && result.data) setProviders(result.data);
+      else setError('Chưa tải được danh sách địa điểm. Bạn thử kết nối lại nhé.');
+    }).catch(() => { if (active) setError('Kết nối bị gián đoạn. Bạn thử lại nhé.'); })
+      .finally(() => { clearTimeout(timeout); if (active) setLoading(false); });
+    return () => { active = false; controller.abort(); clearTimeout(timeout); };
+  }, [attempt]);
 
-  const handleManualSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchProviders(searchCity);
-  };
+  const cities = Array.from(new Set(providers.map(provider => provider.city))).sort((a, b) => a.localeCompare(b, 'vi'));
+  const terms = normalizeCulturalText(query.trim()).split(/\s+/).filter(Boolean);
+  const visible = providers.filter(provider => {
+    const text = normalizeCulturalText([provider.name, provider.address, provider.city, ...provider.items.flatMap(item => [item.name, item.category])].join(' '));
+    return (city === 'ALL' || provider.city === city) && terms.every(term => text.includes(term));
+  }).map(provider => ({ provider, distance: position ? rentalDistance(position, provider) : undefined }))
+    .sort((a, b) => {
+      if (sort === 'price') return (startingPrice(a.provider) ?? Infinity) - (startingPrice(b.provider) ?? Infinity) || a.provider.id - b.provider.id;
+      if (sort === 'name') return a.provider.name.localeCompare(b.provider.name, 'vi');
+      if (sort === 'distance') return (a.distance ?? Infinity) - (b.distance ?? Infinity) || a.provider.id - b.provider.id;
+      return a.provider.id - b.provider.id;
+    });
+  const hasFilters = query.trim() !== '' || city !== 'ALL';
+  const ready = !loading && !error;
 
-  const handleGeolocation = () => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          // In actual production, convert coordinates to city via reverse geocoding
-          alert(`Đã nhận tọa độ: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}. Tự động gợi ý điểm thuê gần nhất!`);
-        },
-        () => {
-          alert('Không thể lấy vị trí tự động. Bạn có thể chọn thành phố thủ công bên dưới.');
-        }
-      );
-    } else {
-      alert('Trình duyệt không hỗ trợ định vị tự động.');
-    }
-  };
+  function resetFilters() { setQuery(''); setCity('ALL'); }
 
-  return (
-    <div className="space-y-8">
-      {/* Banner */}
-      <div className="bg-gradient-to-r from-stone-950 via-stone-900 to-amber-950 text-white p-8 rounded-2xl shadow-md border border-amber-500/30">
-        <div className="flex items-center space-x-2 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-2">
-          <MapPin className="w-4 h-4" />
-          <span>SLICE 3 — Bản Đồ & Địa Điểm Thuê Việt Phục</span>
-        </div>
-        <h1 className="text-3xl font-serif font-bold text-amber-100">Tìm Kiếm Điểm Thuê Trang Phục Uy Tín</h1>
-        <p className="text-sm text-stone-300 mt-2 max-w-2xl">
-          Định vị các nhà cung cấp dịch vụ cho thuê Việt Phục theo khu vực địa lý, hỗ trợ cả tìm kiếm vị trí tự động và nhập vị trí thủ công.
-        </p>
+  function locate() {
+    setLocationMessage('');
+    if (!navigator.geolocation) { setLocationMessage('Trình duyệt chưa hỗ trợ định vị. Bạn có thể chọn khu vực bên dưới.'); return; }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(result => {
+      setPosition({ latitude: result.coords.latitude, longitude: result.coords.longitude });
+      setSort('distance'); setLocating(false);
+      setLocationMessage('Đã sắp xếp các kết quả theo khoảng cách đường thẳng từ vị trí của bạn.');
+    }, () => {
+      setLocating(false);
+      setLocationMessage('Chưa lấy được vị trí. Bạn có thể cho phép định vị trong trình duyệt hoặc chọn khu vực bên dưới.');
+    }, { timeout: 10000, maximumAge: 300000 });
+  }
 
-        {/* Location Search Controls */}
-        <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-xl">
-          <form onSubmit={handleManualSearch} className="flex-1 relative">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3.5" />
-            <input
-              type="text"
-              value={searchCity}
-              onChange={(e) => setSearchCity(e.target.value)}
-              placeholder="Nhập thành phố thủ công (ví dụ: Hà Nội, Huế...)"
-              className="w-full pl-9 pr-4 py-2.5 bg-white text-stone-900 rounded-xl text-xs focus:ring-2 focus:ring-amber-400 outline-none"
-            />
-          </form>
+  return <div className="rentals-page">
+    <header className="rentals-hero">
+      <div><p className="rentals-eyebrow"><span />TỪ BỘ PHỐI ĐẾN TRẢI NGHIỆM</p><h1>Tìm nơi thuê<br /><em>bộ Việt phục của bạn.</em></h1><p className="rentals-intro">Một nơi để xem địa chỉ, so sánh trang phục và tham khảo giá thuê. Chọn khu vực, tìm bộ đồ yêu thích rồi kết nối với cửa hàng.</p></div>
+      <dl className="rentals-overview" aria-label="Tổng quan danh sách"><div><dt>Địa điểm</dt><dd>{ready ? String(providers.length).padStart(2, '0') : '—'}</dd></div><div><dt>Khu vực</dt><dd>{ready ? String(cities.length).padStart(2, '0') : '—'}</dd></div><div><dt>Lựa chọn trang phục</dt><dd>{ready ? String(providers.reduce((count, provider) => count + provider.items.length, 0)).padStart(2, '0') : '—'}</dd></div></dl>
+    </header>
 
-          <button
-            onClick={handleGeolocation}
-            className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow flex items-center justify-center space-x-1.5 shrink-0"
-          >
-            <Navigation className="w-3.5 h-3.5" />
-            <span>Vị trí hiện tại</span>
-          </button>
-        </div>
-      </div>
-
-      {/* City Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-amber-200 pb-3">
-        <span className="text-xs font-bold text-stone-700 uppercase tracking-wider mr-2">Thành phố:</span>
-        {cityOptions.map((c) => (
-          <button
-            key={c.value}
-            onClick={() => setSelectedCity(c.value)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              selectedCity === c.value
-                ? 'bg-red-800 text-amber-200 font-bold shadow-sm'
-                : 'bg-white border border-stone-200 text-stone-700 hover:border-amber-300'
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Demo Data Alert Notice */}
-      <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-center space-x-3 text-amber-900 text-xs">
-        <Info className="w-5 h-5 text-amber-700 shrink-0" />
-        <span>Ghi chú: Toàn bộ danh sách điểm thuê được dán nhãn dữ liệu thử nghiệm (Demo data) rõ ràng. Nút liên hệ sẽ hiển thị thông tin trực tiếp.</span>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
-        <div className="py-16 text-center text-stone-500 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-amber-700" />
-          <p className="text-xs">Đang tải danh sách điểm thuê từ máy chủ REST API...</p>
-        </div>
-      )}
-
-      {/* Error State */}
-      {errorMsg && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-3 text-red-800 text-xs">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          <span>{errorMsg}</span>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && !errorMsg && providers.length === 0 && (
-        <div className="bg-white p-12 rounded-2xl border border-amber-200 text-center space-y-3 shadow-sm">
-          <MapPin className="w-12 h-12 text-stone-300 mx-auto" />
-          <h3 className="font-serif font-bold text-lg text-stone-800">Không tìm thấy điểm thuê ở khu vực này</h3>
-          <p className="text-xs text-stone-500">Thử tìm kiếm với tên thành phố khác.</p>
-        </div>
-      )}
-
-      {/* Success State — Grid of Rental Providers */}
-      {!loading && providers.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {providers.map((prov) => (
-            <div key={prov.id} className="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm hover:shadow-md transition-all space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  {prov.isDemoData && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-100 text-stone-600 rounded border border-stone-200">
-                      Demo Data
-                    </span>
-                  )}
-                  <span className="text-[11px] font-bold text-amber-800">{prov.city}</span>
-                </div>
-
-                <h3 className="font-serif font-bold text-xl text-red-950">{prov.name}</h3>
-
-                <p className="text-xs text-stone-600 flex items-start space-x-1.5">
-                  <MapPin className="w-4 h-4 text-red-800 shrink-0 mt-0.5" />
-                  <span>{prov.address}</span>
-                </p>
-
-                {prov.phone && (
-                  <p className="text-xs text-stone-600 flex items-center space-x-1.5">
-                    <Phone className="w-4 h-4 text-amber-700 shrink-0" />
-                    <span className="font-semibold text-stone-800">{prov.phone}</span>
-                  </p>
-                )}
-
-                {/* Rental Items List & Pricing */}
-                {prov.items && prov.items.length > 0 && (
-                  <div className="space-y-2 pt-2 border-t border-stone-100">
-                    <p className="text-[11px] font-bold text-stone-700 uppercase">Trang phục cho thuê & Đơn giá:</p>
-                    <div className="space-y-1.5">
-                      {prov.items.map((item) => (
-                        <div key={item.id} className="p-2 bg-amber-50/50 rounded-lg border border-amber-200/50 flex justify-between items-center text-xs">
-                          <div>
-                            <p className="font-semibold text-stone-900">{item.name}</p>
-                            <span className="text-[10px] text-stone-500">{item.category}</span>
-                          </div>
-                          <span className="font-serif font-bold text-red-900 shrink-0 ml-2">
-                            {Number(item.pricePerDay).toLocaleString('vi-VN')} đ/ngày
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-3 border-t border-stone-100 flex space-x-2">
-                <a
-                  href={`tel:${prov.phone}`}
-                  className="flex-1 py-2 bg-red-800 hover:bg-red-900 text-amber-200 text-xs font-bold rounded-xl text-center shadow transition-all flex items-center justify-center space-x-1"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>Gọi Liên Hệ</span>
-                </a>
-                {prov.website && (
-                  <a
-                    href={prov.website}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl transition-colors"
-                    title="Website nhà cung cấp"
-                  >
-                    <Globe className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="rentals-search-bar">
+      <label className="rentals-search"><Search size={19} strokeWidth={1.5} /><span className="sr-only">Tìm cửa hàng, địa chỉ hoặc trang phục</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Tìm cửa hàng, khu vực hoặc tên trang phục…" />{query && <button type="button" onClick={() => setQuery('')} aria-label="Xóa từ khóa"><X size={16} /></button>}</label>
+      <button className="rental-button rentals-locate" disabled={locating} onClick={locate}>{locating ? <Loader2 className="animate-spin" size={16} /> : <Navigation size={16} />}{locating ? 'Đang lấy vị trí…' : 'Gần vị trí của tôi'}</button>
     </div>
-  );
+    {locationMessage && <div className="rentals-location-message" role="status"><p>{locationMessage}</p>{position && <button onClick={() => { setPosition(undefined); setSort('default'); setLocationMessage(''); }}>Bỏ vị trí<X size={13} /></button>}</div>}
+
+    <div className="rentals-layout">
+      <aside className="rentals-sidebar" aria-label="Bộ lọc địa điểm">
+        <div className="rentals-filter-title"><h2><SlidersHorizontal size={15} />Thu hẹp tìm kiếm</h2>{hasFilters && <button onClick={resetFilters}>Đặt lại</button>}</div>
+        <fieldset className="rentals-city-filter"><legend>Khu vực</legend><div className="rentals-city-options">{['ALL', ...cities].map(value => <button key={value} type="button" data-city={value} aria-pressed={city === value} onClick={() => setCity(value)}><span className="rentals-radio" aria-hidden="true">{city === value && <Check size={10} strokeWidth={3} />}</span><span>{value === 'ALL' ? 'Tất cả khu vực' : value}</span><small>{ready ? value === 'ALL' ? providers.length : providers.filter(provider => provider.city === value).length : '—'}</small></button>)}</div></fieldset>
+        <div className="rentals-sidebar-note"><p>Cần thêm cảm hứng?</p><Palette size={27} strokeWidth={1.2} /><h3>Thử phối trước<br />khi chọn thuê.</h3><span>Khám phá màu sắc và dáng áo trong phòng phối đồ của bạn.</span><Link href="/studio">Ghé Studio<ArrowUpRight size={15} /></Link></div>
+      </aside>
+
+      <section className="rentals-results" aria-labelledby="rentals-results-title">
+        <div className="rentals-results-toolbar"><div><p className="rentals-eyebrow">DANH SÁCH ĐỊA ĐIỂM</p><h2 id="rentals-results-title" aria-live="polite">{loading ? 'Đang tải địa điểm…' : error ? 'Chưa tải được danh sách' : `${visible.length} địa điểm`}{ready && hasFilters && <span> / {providers.length} trong danh sách</span>}</h2></div><label className="rentals-sort">Sắp xếp<select aria-label="Sắp xếp địa điểm" value={sort} onChange={event => setSort(event.target.value)}><option value="default">Mặc định</option><option value="price">Giá khởi điểm tăng dần</option><option value="name">Tên cửa hàng A–Z</option><option value="distance" disabled={!position}>Gần vị trí của tôi</option></select></label></div>
+        {hasFilters && <div className="rentals-active-filters" aria-label="Bộ lọc đang áp dụng">{city !== 'ALL' && <button onClick={() => setCity('ALL')} aria-label="Bỏ lọc khu vực">{city}<X size={12} /></button>}{query.trim() && <button onClick={() => setQuery('')} aria-label="Bỏ lọc từ khóa">“{query.trim()}”<X size={12} /></button>}</div>}
+        {ready && providers.some(provider => provider.isDemoData) && <div className="rentals-demo-note"><Info size={16} /><p>Các địa điểm có nhãn <strong>Demo data</strong> là dữ liệu mẫu để trải nghiệm tính năng, bao gồm thông tin liên hệ và giá thuê.</p></div>}
+        {loading ? <div className="rentals-loading" role="status" aria-label="Đang tải địa điểm thuê">{[0, 1, 2].map(value => <div key={value} className="rental-skeleton"><span /><i /><i /></div>)}</div>
+          : error ? <div className="rentals-state" role="alert"><MapPin size={32} strokeWidth={1.2} /><h3>Chưa kết nối được với danh sách</h3><p>{error}</p><button onClick={() => setAttempt(value => value + 1)} className="rental-button rental-button-primary"><RotateCcw size={15} />Tải lại địa điểm</button></div>
+          : visible.length ? <><div className="rentals-list">{visible.map(({ provider, distance }, index) => <RentalProviderCard key={provider.id} provider={provider} distance={distance} index={index} />)}</div><p className="rentals-list-end">Đang hiển thị {visible.length} / {providers.length} địa điểm{hasFilters ? ' theo bộ lọc của bạn' : ' trong danh sách'}.</p></>
+            : <div className="rentals-state"><Search size={32} strokeWidth={1.2} /><h3>{providers.length ? 'Chưa tìm thấy địa điểm phù hợp' : 'Danh sách đang được cập nhật'}</h3><p>{providers.length ? 'Thử từ khóa khác hoặc mở rộng khu vực tìm kiếm.' : 'Bạn có thể ghé Studio để khám phá các bộ phối trong lúc chờ.'}</p>{hasFilters && <button onClick={resetFilters} className="rental-button rental-button-primary"><RotateCcw size={15} />Xóa bộ lọc</button>}</div>}
+      </section>
+    </div>
+  </div>;
 }

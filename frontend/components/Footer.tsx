@@ -1,59 +1,42 @@
-import React from 'react';
+'use client';
+
 import Link from 'next/link';
+import { ArrowUp, ArrowUpRight, BookOpen } from 'lucide-react';
+import './footer.css';
 
-export const Footer: React.FC = () => {
-  return (
-    <footer className="bg-stone-900 text-stone-300 border-t border-amber-900/50 mt-16">
-      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-amber-600 text-white font-serif font-bold text-base flex items-center justify-center">
-                VP
-              </div>
-              <span className="font-serif font-bold text-lg text-amber-400">VIỆT PHỤC STUDIO</span>
-            </div>
-            <p className="text-sm text-stone-400 leading-relaxed">
-              Nền tảng ứng dụng công nghệ khám phá, phối đồ truyền thống Việt Nam và kiểm chứng chuẩn mực văn hóa di sản.
-            </p>
-          </div>
+const navigation = [
+  { title: 'Khám phá', links: [
+    { href: '/cultural', label: 'Bảo tàng Việt phục' },
+    { href: '/rentals', label: 'Địa điểm thuê' },
+    { href: '/assistant', label: 'Trợ lý Việt phục' },
+  ] },
+  { title: 'Sáng tạo', links: [
+    { href: '/onboarding', label: 'Tạo bộ phối mới' },
+    { href: '/studio', label: 'Studio phối đồ' },
+    { href: '/lookbook', label: 'Lookbook của bạn' },
+  ] },
+];
 
-          <div>
-            <h3 className="font-serif font-bold text-amber-400 text-sm tracking-wider uppercase mb-4">Tính năng</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/onboarding" className="hover:text-amber-300 transition-colors">Tạo gợi ý trang phục</Link></li>
-              <li><Link href="/studio" className="hover:text-amber-300 transition-colors">Phối đồ Studio</Link></li>
-              <li><Link href="/cultural" className="hover:text-amber-300 transition-colors">Từ điển Văn hóa</Link></li>
-              <li><Link href="/rentals" className="hover:text-amber-300 transition-colors">Tìm điểm thuê</Link></li>
-            </ul>
-          </div>
+export function Footer() {
+  function backToTop() {
+    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
 
-          <div>
-            <h3 className="font-serif font-bold text-amber-400 text-sm tracking-wider uppercase mb-4">Các loại Việt Phục</h3>
-            <ul className="space-y-2 text-sm text-stone-400">
-              <li>Áo Dài Truyền Thống & Tân Thời</li>
-              <li>Áo Nhật Bình Hoàng Gia Huế</li>
-              <li>Áo Giao Lĩnh (Lý - Trần - Lê)</li>
-              <li>Áo Tấc & Áo Ngũ Thân Tay Thụt</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-serif font-bold text-amber-400 text-sm tracking-wider uppercase mb-4">Nguồn tư liệu</h3>
-            <p className="text-xs text-stone-400 leading-relaxed mb-3">
-              Mọi dữ liệu văn hóa được tham chiếu nghiêm ngặt từ các bộ sử liệu và ấn phẩm như: Khâm Định Đại Nam Hội Điển Sự Lệ, Ngàn Năm Áo Mũ.
-            </p>
-            <span className="inline-block px-2 py-1 bg-amber-950 text-amber-300 text-xs rounded border border-amber-800">
-              Chuẩn xác & Tôn vinh Di sản
-            </span>
-          </div>
+  return <footer className="site-footer">
+    <div className="site-footer-inner">
+      <div className="site-footer-main">
+        <div className="site-footer-brand">
+          <Link href="/" className="site-footer-logo" aria-label="Việt Phục Studio — Trang chủ"><span className="site-footer-monogram" aria-hidden="true">VP</span><span>VIỆT PHỤC STUDIO<small>TINH HOA ÁO MŨ VIỆT</small></span></Link>
+          <p className="site-footer-tagline">Một nét Việt.<br /><em>Một cách kể riêng.</em></p>
+          <p className="site-footer-description">Khám phá câu chuyện y phục, thử những cách phối mới và giữ lại cảm hứng của bạn.</p>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-stone-800 flex flex-col md:flex-row justify-between items-center text-xs text-stone-500">
-          <p>© 2026 Việt Phục Studio. Tất cả các quyền được bảo lưu.</p>
-          <p className="mt-2 md:mt-0">Thiết kế chuẩn hóa trải nghiệm đa nền tảng Responsive.</p>
-        </div>
+        {navigation.map(group => <nav key={group.title} className="site-footer-nav" aria-label={`${group.title} ở chân trang`}><h2>{group.title}</h2><ul>{group.links.map(link => <li key={link.href}><Link href={link.href}>{link.label}<ArrowUpRight size={13} aria-hidden="true" /></Link></li>)}</ul></nav>)}
+
+        <div className="site-footer-sources"><BookOpen size={23} strokeWidth={1.4} aria-hidden="true" /><h2>Hiểu để thêm yêu</h2><p>Câu chuyện, hình ảnh và nguồn tham khảo được đặt trong hồ sơ của từng y phục.</p><Link href="/cultural">Tìm hiểu từ bộ sưu tập<ArrowUpRight size={15} aria-hidden="true" /></Link></div>
       </div>
-    </footer>
-  );
-};
+
+      <div className="site-footer-bottom"><p>© {new Date().getFullYear()} Việt Phục Studio</p><span>Gìn giữ vẻ đẹp trong từng nếp áo.</span><button type="button" onClick={backToTop}>Lên đầu trang<ArrowUp size={15} aria-hidden="true" /></button></div>
+    </div>
+  </footer>;
+}

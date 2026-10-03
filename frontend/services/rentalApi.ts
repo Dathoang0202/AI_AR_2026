@@ -22,9 +22,9 @@ export interface RentalProviderResponse {
   items: RentalItemResponse[];
 }
 
-export async function getRentalProviders(city?: string): Promise<ApiResponse<RentalProviderResponse[]>> {
+export async function getRentalProviders(city?: string, signal?: AbortSignal): Promise<ApiResponse<RentalProviderResponse[]>> {
   const query = city ? `?city=${encodeURIComponent(city)}` : '';
-  return fetchApi<RentalProviderResponse[]>(`/rentals${query}`, { method: 'GET' });
+  return fetchApi<RentalProviderResponse[]>(`/rentals${query}`, { method: 'GET', signal });
 }
 
 export async function getRentalProviderById(id: number): Promise<ApiResponse<RentalProviderResponse>> {

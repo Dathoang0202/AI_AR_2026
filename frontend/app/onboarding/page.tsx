@@ -69,7 +69,7 @@ function OnboardingContent() {
     </header>
 
     {!results ? <form onSubmit={submit}>
-      <fieldset disabled={loading} className="grid min-w-0 items-start gap-6 lg:grid-cols-[1.1fr_1fr]">
+      <fieldset disabled={loading} className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-[1.1fr_1fr]">
         <section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-7">
           <p className="mb-2 text-[10px] uppercase tracking-widest text-amber-800">01 · BỐI CẢNH</p>
           <h2 className="mb-5 font-serif text-2xl font-semibold">Một dịp, một câu chuyện</h2>

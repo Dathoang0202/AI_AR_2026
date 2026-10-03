@@ -21,9 +21,10 @@ export function ColorPalette({ values, onChange, multiple = false }: { values: s
     if (multiple && values.includes(hex)) return setError('Màu này đã có trong bảng màu đã chọn.');
     choose(hex);
   }
-  return <div className="space-y-4" data-color-palette>
-    <div className="grid max-w-[300px] grid-cols-6 gap-3">
-      {colors.map(color => <button key={color.hex} type="button" onClick={() => choose(color.hex)} aria-label={`${color.label} ${color.hex}`} aria-pressed={values.includes(color.hex)} title={color.label} className={`relative aspect-square rounded-full border border-stone-300 shadow-sm ring-offset-2 ${values.includes(color.hex) ? 'ring-2 ring-red-800' : 'hover:ring-2 hover:ring-stone-300'}`} style={{ backgroundColor: color.hex }}>{values.includes(color.hex) && <Check size={14} className="absolute inset-0 m-auto rounded-full bg-white/90 p-0.5 text-stone-900" />}</button>)}
+  return <div className="min-w-0 space-y-4" data-color-palette>
+    {/* Reserve space for the selected/focused ring inside scrollable panels. */}
+    <div className="grid w-full min-w-0 max-w-[300px] grid-cols-6 gap-2.5 p-1.5" data-color-swatches>
+      {colors.map(color => <button key={color.hex} type="button" onClick={() => choose(color.hex)} aria-label={`${color.label} ${color.hex}`} aria-pressed={values.includes(color.hex)} title={color.label} className={`relative aspect-square w-full min-w-0 rounded-full border border-stone-300 shadow-sm ring-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-800 ${values.includes(color.hex) ? 'ring-2 ring-red-800' : 'hover:ring-2 hover:ring-stone-300'}`} style={{ backgroundColor: color.hex }}>{values.includes(color.hex) && <Check size={14} className="absolute inset-0 m-auto rounded-full bg-white/90 p-0.5 text-stone-900" />}</button>)}
     </div>
     <div className="flex flex-wrap gap-2" aria-label="Màu đã chọn">{values.map(hex => <span key={hex} className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[11px] text-stone-700"><span className="h-2.5 w-2.5 rounded-full border border-stone-200" style={{ backgroundColor: hex }} />{colorName(hex)}{multiple && <button type="button" aria-label={`Bỏ màu ${hex}`} onClick={() => onChange(values.filter(value => value !== hex))}><X size={12} /></button>}</span>)}</div>
     <div className="flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 p-2">
