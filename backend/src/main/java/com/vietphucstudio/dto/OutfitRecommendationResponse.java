@@ -14,6 +14,7 @@ public class OutfitRecommendationResponse {
     private String culturalContext;
     private String historicalPeriod;
     private String stylingAdvice;
+    private List<String> matchReasons;
 
     public OutfitRecommendationResponse() {}
 
@@ -58,4 +59,7 @@ public class OutfitRecommendationResponse {
 
     public String getStylingAdvice() { return stylingAdvice; }
     public void setStylingAdvice(String stylingAdvice) { this.stylingAdvice = stylingAdvice; }
+
+    public List<String> getMatchReasons() { return matchReasons; }
+    public void setMatchReasons(List<String> matchReasons) { this.matchReasons = matchReasons; }
 }

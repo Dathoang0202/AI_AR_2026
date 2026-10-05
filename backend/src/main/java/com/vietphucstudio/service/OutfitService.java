@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 import static com.vietphucstudio.service.GarmentRules.normalized;
 
 @Service
@@ -54,26 +55,68 @@ public class OutfitService {
         List<String> colors = request.getPreferredColors() == null ? List.of() : request.getPreferredColors().stream()
                 .filter(value -> value != null && !value.isBlank()).map(this::colorHex)
                 .filter(value -> !value.isEmpty()).distinct().limit(8).toList();
-        List<String> palette = colors.isEmpty() ? List.of("#C0392B", "#1E4D2B", "#FDFBF7") : colors;
-        return garments.stream().filter(item -> supportsGender(item, male))
+        List<String> preferredPalette = colors.isEmpty() ? List.of("#C0392B", "#1E4D2B", "#FDFBF7") : colors;
+        List<CulturalItem> ranked = garments.stream().filter(item -> supportsGender(item, male))
                 .filter(item -> GarmentRules.supportsOccasion(item.getName(), request.getOccasion()))
                 .sorted(Comparator.<CulturalItem>comparingInt(item -> recommendationScore(item, request)).reversed()
                         .thenComparing(CulturalItem::getId)).limit(3)
-                .map(item -> {
+                .toList();
+        return IntStream.range(0, ranked.size()).mapToObj(index -> {
+                    CulturalItem item = ranked.get(index);
                     boolean fourPanel = normalized(item.getName()).contains("tu than");
                     String name = normalized(item.getName());
-                    String underlayer = fourPanel ? "Yếm và váy" : name.contains("ao ba ba") ? "Quần dài"
-                            : name.contains("trang phuc nu thai (thanh hoa)") ? "Váy và thắt lưng" : "Quần lụa";
+                    String underlayer = fourPanel ? "Yếm và váy" : name.contains("trang phuc nu thai (thanh hoa)")
+                            ? "Váy và thắt lưng" : name.contains("ao dai") || name.contains("ao ba ba")
+                            || name.contains("tay chen") ? "Quần dài" : "Quần lụa";
+                    List<String> palette = recommendationPalette(preferredPalette, index,
+                            request.getCulturalItemId() != null, request.getOccasion());
+                    List<String> accessories = recommendedAccessories(item, request, accessoryCatalog, male);
                     OutfitRecommendationResponse result = new OutfitRecommendationResponse(
                             "Phối đồ cùng " + item.getName(), item.getName(),
-                            List.of(item.getName(), underlayer), recommendedAccessories(item, request, accessoryCatalog, male), palette,
+                            List.of(item.getName(), underlayer), accessories, palette,
                             item.getDescription(), item.getHistoricalPeriod(),
-                            "Phối theo phong cách " + request.getStyle() + " cho " + request.getOccasion() + " · " + request.getRegion()
-                                    + ". Mở Studio để thử màu và phụ kiện, kiểm tra bối cảnh trước khi lưu.");
+                            stylingAdvice(underlayer, accessories, palette));
                     result.setCulturalItemId(item.getId());
                     result.setImageUrl(item.getImageUrl());
+                    result.setMatchReasons(recommendationReasons(item, request));
                     return result;
                 }).toList();
+    }
+
+    private List<String> recommendationPalette(List<String> preferred, int index, boolean selectedGarment, String occasion) {
+        if (selectedGarment) return preferred;
+        String primary = preferred.get(index % preferred.size());
+        String context = normalized(occasion);
+        boolean formal = context.contains("cuoi") || context.contains("tet") || context.contains("nghi le");
+        String accent;
+        if (index == 0 && preferred.size() > 1) accent = preferred.get(1);
+        else if (preferred.size() == 1) accent = List.of("#FDFBF7", "#1A365D", "#D4AF37").get(index);
+        else accent = formal || index == 1 ? "#FDFBF7" : "#895B3F";
+        if (accent.equals(primary)) accent = "#FDFBF7".equals(primary) ? "#1A365D" : "#FDFBF7";
+        return List.of(primary, accent);
+    }
+
+    private String stylingAdvice(String underlayer, List<String> accessories, List<String> palette) {
+        StringBuilder advice = new StringBuilder("Dùng ").append(colorLabel(palette.get(0)))
+                .append(" làm màu chính");
+        if (palette.size() > 1) advice.append(", ").append(colorLabel(palette.get(1))).append(" làm màu điểm");
+        advice.append("; phối cùng ").append(underlayer.toLowerCase(Locale.ROOT)).append(".");
+        if (accessories.isEmpty()) advice.append(" Giữ phụ kiện tối giản để tập trung vào phom áo.");
+        else advice.append(" Thử thêm ").append(String.join(" và ", accessories)).append(".");
+        return advice.toString();
+    }
+
+    private String colorLabel(String hex) {
+        return switch (hex) {
+            case "#C0392B" -> "đỏ son";
+            case "#D4AF37" -> "vàng";
+            case "#FDFBF7" -> "trắng ngà";
+            case "#1A365D" -> "xanh lam";
+            case "#292524" -> "đen mực";
+            case "#895B3F" -> "nâu đất";
+            case "#1E4D2B" -> "xanh cổ vịt";
+            default -> hex;
+        };
     }
 
     private boolean supportsGender(CulturalItem item, boolean male) {
@@ -91,14 +134,17 @@ public class OutfitService {
             addAccessory(result, catalog, "non la", male);
         } else {
             String context = normalized(request.getOccasion());
+            boolean daily = context.contains("hang ngay");
+            boolean street = context.contains("dao pho");
             boolean casual = context.contains("hang ngay") || context.contains("dao pho") || context.contains("chup anh");
             if ((name.contains("ao dai") || name.contains("tu than")) && casual) {
                 addAccessory(result, catalog, "non la", male);
-            } else if (name.contains("ao dai") || name.contains("tu than") || name.contains("nhat binh")
-                    || name.contains("ao tac") || name.contains("ngu than")) {
+            } else if (!daily && !street && !(name.contains("tay chen") && context.contains("tet"))
+                    && (name.contains("ao dai") || name.contains("tu than") || name.contains("nhat binh")
+                    || name.contains("ao tac") || name.contains("ngu than"))) {
                 addAccessory(result, catalog, male ? "khan dong" : "man", male);
             }
-            addAccessory(result, catalog, "quat", male);
+            if (context.contains("chup anh")) addAccessory(result, catalog, "quat", male);
         }
         return result;
     }
@@ -115,19 +161,90 @@ public class OutfitService {
 
     private int recommendationScore(CulturalItem item, OutfitPreferenceRequest request) {
         String name = normalized(item.getName());
-        String context = normalized(request.getOccasion()) + " " + normalized(request.getStyle());
-        String region = normalized(request.getRegion()).split(" \\(")[0];
-        int score = !region.isBlank() && normalized(item.getRegion()).contains(region) ? 2 : 0;
-        if (name.contains("nhat binh") && (context.contains("cuoi") || context.contains("hoang gia"))) score += 6;
-        if (name.contains("tac") && (context.contains("nghi le") || context.contains("tet") || context.contains("si phu"))) score += 6;
-        if (name.contains("tu than") && context.contains("dan gian")) score += 7;
-        if (name.contains("giao linh") && (context.contains("chup anh") || context.contains("co dien"))) score += 4;
-        if (name.contains("ao dai") && (context.contains("tan thoi") || context.contains("dao pho"))) score += 6;
-        if (name.contains("ao ba ba") && (context.contains("dan gian") || context.contains("hang ngay"))) score += 7;
-        if (name.contains("ngu than") && name.contains("tay chen")
-                && (context.contains("si phu") || context.contains("hang ngay") || context.contains("dao pho"))) score += 6;
-        if (name.contains("trang phuc nu thai (thanh hoa)") && context.contains("dan gian")) score += 7;
+        String occasion = normalized(request.getOccasion());
+        String style = normalized(request.getStyle());
+        int score = regionScore(item, request.getRegion());
+        if (style.contains("hoang gia")) {
+            if (name.contains("nhat binh")) score += 9;
+            else if (name.contains("ao tac")) score += 3;
+        } else if (style.contains("si phu")) {
+            if (name.contains("ao tac") || name.contains("tay chen")) score += 8;
+            else if (name.contains("giao linh")) score += 3;
+        } else if (style.contains("tan thoi")) {
+            if (name.contains("ao dai")) score += 9;
+            else if (name.contains("tay chen")) score += 3;
+        } else if (style.contains("dan gian")) {
+            if (name.contains("tu than") || name.contains("ao ba ba") || name.contains("trang phuc nu thai")) score += 8;
+            else if (name.contains("giao linh")) score += 2;
+        }
+        if (occasion.contains("cuoi")) {
+            if (name.contains("nhat binh")) score += 7;
+            else if (name.contains("ao dai") || name.contains("ao tac")) score += 4;
+        } else if (occasion.contains("tet")) {
+            if (name.contains("ao dai") || name.contains("ao tac")) score += 5;
+            else if (name.contains("tay chen")) score += 3;
+        } else if (occasion.contains("chup anh")) {
+            if (name.contains("giao linh")) score += 4;
+            else if (name.contains("tu than") || name.contains("trang phuc nu thai") || name.contains("nhat binh")) score += 3;
+        } else if (occasion.contains("nghi le") || occasion.contains("dang huong")) {
+            if (name.contains("ao tac")) score += 6;
+            else if (name.contains("nhat binh") || name.contains("giao linh")) score += 3;
+        } else if (occasion.contains("dao pho")) {
+            if (name.contains("ao dai")) score += 6;
+            else if (name.contains("tay chen")) score += 5;
+            else if (name.contains("ao ba ba")) score += 3;
+        } else if (occasion.contains("hang ngay")) {
+            if (name.contains("ao ba ba")) score += 7;
+            else if (name.contains("tay chen")) score += 6;
+            else if (name.contains("ao dai")) score += 3;
+            else if (name.contains("ao tac")) score -= 5;
+        }
         return score;
+    }
+
+    private int regionScore(CulturalItem item, String selectedRegion) {
+        String selected = normalized(selectedRegion);
+        String region = normalized(item.getRegion());
+        if (selected.isBlank() || region.isBlank()) return 0;
+        if (region.contains("toan quoc")) return 1;
+        if (selected.contains("hue") && region.contains("thanh hoa")) return -6;
+        String broadRegion = selected.split(" \\(")[0];
+        return region.contains(broadRegion) ? 3 : -2;
+    }
+
+    private List<String> recommendationReasons(CulturalItem item, OutfitPreferenceRequest request) {
+        String name = normalized(item.getName());
+        String style = normalized(request.getStyle());
+        String occasion = normalized(request.getOccasion());
+        List<String> reasons = new ArrayList<>();
+        if (style.contains("hoang gia") && name.contains("nhat binh"))
+            reasons.add("Lễ phục cung đình hợp cảm hứng hoàng gia bạn chọn.");
+        else if (style.contains("si phu") && (name.contains("ao tac") || name.contains("tay chen")))
+            reasons.add("Dáng ngũ thân hợp hướng phối nho nhã, chỉn chu.");
+        else if (style.contains("tan thoi") && name.contains("ao dai"))
+            reasons.add("Dáng áo dài hợp phong cách tân thời, thanh lịch.");
+        else if (style.contains("tan thoi") && name.contains("tay chen"))
+            reasons.add("Tay áo gọn tạo một phương án truyền thống tiết chế hơn áo dài tân thời.");
+        else if (style.contains("dan gian") && (name.contains("tu than") || name.contains("ao ba ba") || name.contains("trang phuc nu thai")))
+            reasons.add("Bộ trang phục gợi cảm hứng dân gian, gần gũi.");
+
+        if (occasion.contains("cuoi") && (name.contains("nhat binh") || name.contains("ao dai") || name.contains("ao tac")))
+            reasons.add("Có thể thử cho dịp cưới; khi phục dựng cần xét vai trò và nghi thức cụ thể.");
+        else if (occasion.contains("tet") && (name.contains("ao dai") || name.contains("ao tac")))
+            reasons.add("Dáng áo chỉn chu để thử trong dịp Tết.");
+        else if (occasion.contains("tet") && name.contains("tay chen"))
+            reasons.add("Có thể thử dáng áo gọn cho dịp Tết với phụ kiện tối giản.");
+        else if (occasion.contains("chup anh"))
+            reasons.add("Phom áo tạo một lựa chọn khác cho ảnh di sản.");
+        else if (occasion.contains("hang ngay") && (name.contains("ao ba ba") || name.contains("tay chen")))
+            reasons.add("Dáng áo gọn, phù hợp hướng phối sinh hoạt hằng ngày.");
+        else if (occasion.contains("dao pho") && (name.contains("ao dai") || name.contains("tay chen")))
+            reasons.add("Phom áo có thể thử cho dạo phố hoặc sự kiện văn hóa.");
+
+        if (regionScore(item, request.getRegion()) >= 3)
+            reasons.add("Mục trưng bày gắn trang phục với " + item.getRegion() + ".");
+        if (reasons.isEmpty()) reasons.add("Một dáng áo khác trong bộ sưu tập để bạn so sánh khi mặc thử.");
+        return reasons.stream().limit(3).toList();
     }
 
     private String colorHex(String value) {

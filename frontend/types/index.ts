@@ -46,6 +46,7 @@ export interface OutfitRecommendationResponse {
   culturalContext: string;
   historicalPeriod: string;
   stylingAdvice: string;
+  matchReasons?: string[];
 }
 
 export interface CulturalValidationRequest {

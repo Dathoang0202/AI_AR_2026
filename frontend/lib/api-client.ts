@@ -40,19 +40,22 @@ export async function fetchApi<T>(
       headers,
     });
 
-    const data: ApiResponse<T> = await res.json();
+    const data = await res.json() as ApiResponse<T> & { error?: { code: string; message: string } | string };
 
-    if (!res.ok && !data.error) {
+    if (!res.ok) {
+      const message = typeof data.error === 'object' && data.error?.message
+        ? data.error.message
+        : `Máy chủ từ chối yêu cầu (${res.status}).`;
       return {
         success: false,
         error: {
           code: `HTTP_${res.status}`,
-          message: `Lỗi kết nối máy chủ (${res.status})`,
+          message,
         },
       };
     }
 
-    return data;
+    return data as ApiResponse<T>;
   } catch (err: any) {
     return {
       success: false,

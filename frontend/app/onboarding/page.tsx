@@ -96,7 +96,7 @@ function OnboardingContent() {
           <section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-7">
             <p className="mb-2 text-[10px] uppercase tracking-widest text-amber-800">03 · MÀU SẮC</p>
             <h2 className="mb-2 font-serif text-2xl font-semibold">Bảng màu của bạn</h2>
-            <p className="mb-5 text-xs leading-relaxed text-stone-500">Chọn nhiều màu hoặc thêm sắc màu riêng. Màu đầu tiên sẽ được mặc thử khi mở Studio.</p>
+            <p className="mb-5 text-xs leading-relaxed text-stone-500">Chọn những màu bạn thích. Mỗi gợi ý sẽ tạo một cách phối riêng; màu đứng đầu từng gợi ý sẽ được mặc thử trong Studio.</p>
             <ColorPalette values={colors} onChange={setColors} multiple />
           </section>
           <div>
@@ -107,12 +107,13 @@ function OnboardingContent() {
       </fieldset>
     </form> : <section className="space-y-6" aria-label="Gợi ý phối đồ">
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#f2ede4] p-5"><p className="text-xs leading-relaxed text-stone-600">{occasion} · {region}<br /><strong className="mt-1 inline-block text-stone-800">{style} · Dáng {gender === 'male' ? 'nam' : 'nữ'}</strong></p><button onClick={() => setResults(null)} className="flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-xs"><RotateCcw size={14} />Đổi bối cảnh</button></div>
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{results.map(item => <article key={item.culturalItemId} data-recommendation-id={item.culturalItemId} className="flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{results.map((item, index) => <article key={item.culturalItemId} data-recommendation-id={item.culturalItemId} className="flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white">
         <Link href={`/cultural/${item.culturalItemId}`} target="_blank" rel="noopener noreferrer" aria-label={`Xem ${item.primaryGarment} trong bảo tàng (mở tab mới)`} className="relative block h-64 bg-[#f2ede4] [&_img]:h-full [&_img]:w-full [&_img]:object-contain"><ArtifactImage name={item.primaryGarment} src={item.imageUrl} /><span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-white/95 px-3 py-1.5 text-[11px] text-amber-900">Xem trong bảo tàng <ArrowUpRight size={12} /></span></Link>
         <div className="flex flex-1 flex-col gap-4 p-5">
-          <div><p className="text-[10px] uppercase tracking-wide text-amber-800">{item.historicalPeriod}</p><h2 className="mt-2 font-serif text-xl font-semibold text-red-950">{item.primaryGarment}</h2></div>
+          <div><p className="text-[10px] uppercase tracking-wide text-amber-800">Gợi ý {index + 1} · {item.historicalPeriod}</p><h2 className="mt-2 font-serif text-xl font-semibold text-red-950">{item.primaryGarment}</h2></div>
+          {!!item.matchReasons?.length && <div className="rounded-xl bg-amber-50/70 p-3"><p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">Vì sao phù hợp</p><ul className="space-y-1 text-xs leading-relaxed text-stone-700">{item.matchReasons.map(reason => <li key={reason}>• {reason}</li>)}</ul></div>}
           <p className="line-clamp-3 text-xs leading-relaxed text-stone-500">{item.culturalContext}</p>
-          <div className="flex flex-wrap gap-2">{item.colors.map(hex => <span key={hex} title={colorName(hex)} className="h-6 w-6 rounded-full border border-stone-200" style={{ backgroundColor: hex }} />)}</div>
+          <div><p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Màu chính → màu điểm</p><div className="flex flex-wrap gap-2">{item.colors.map((hex, colorIndex) => <span key={`${hex}-${colorIndex}`} title={colorName(hex)} className="inline-flex items-center gap-1 rounded-full border border-stone-200 px-2 py-1 text-[11px] text-stone-700"><span className="h-4 w-4 rounded-full border border-stone-200" style={{ backgroundColor: hex }} />{colorName(hex)}</span>)}</div></div>
           <p className="text-xs leading-relaxed text-stone-600"><strong>Phụ kiện:</strong> {item.accessories.join(', ') || 'Tự chọn trong Studio'}</p>
           <p className="text-xs leading-relaxed text-stone-500">{item.stylingAdvice}</p>
           <button onClick={() => tryOutfit(item)} className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-red-900 px-4 py-3 text-xs font-semibold text-white">Mặc thử trong Studio <ArrowRight size={15} /></button>

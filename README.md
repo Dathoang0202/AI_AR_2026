@@ -23,7 +23,7 @@
    - Tra cứu nhà cung cấp dịch vụ cho thuê theo khu vực địa lý, xem bảng giá theo ngày và nút liên hệ trực tiếp.
 
 6. **Trợ Lý AI Di Sản (AI Cultural Assistant)**:
-   - Hỏi đáp tương tác cùng AI về quy chuẩn y phục cổ truyền với gợi ý hành động thông minh.
+   - Hỏi đáp nhiều lượt về Việt phục, dùng các mục di sản liên quan làm ngữ cảnh. Khi cấu hình OpenAI, trợ lý tạo câu trả lời linh hoạt; nếu chưa cấu hình hoặc dịch vụ lỗi, trợ lý trả lời từ dữ liệu có sẵn.
 
 ---
 
@@ -40,6 +40,9 @@
 ## ⚙️ Hướng Dẫn Khởi Chạy Nhanh
 
 ### 1. Khởi chạy Backend (Port 8080):
+
+Để bật câu trả lời AI, đặt biến môi trường `OPENAI_API_KEY` trên máy chạy backend. Có thể đổi mô hình bằng `OPENAI_MODEL` (mặc định `gpt-5.4-mini`). Không đưa khóa API vào frontend hoặc commit vào Git. Khi không có khóa, trang chat vẫn chạy ở chế độ dữ liệu di sản.
+
 ```bash
 cd backend
 ./mvnw spring-boot:run

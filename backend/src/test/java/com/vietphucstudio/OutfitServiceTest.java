@@ -113,6 +113,39 @@ class OutfitServiceTest {
     }
 
     @Test
+    void recommendationsExplainDifferentLooksAndPrioritizeChosenStyle() {
+        when(culturalItemRepository.findByCategory("GARMENT")).thenReturn(List.of(
+                garment(3L, "Áo Tấc"), garment(6L, "Áo Dài"), garment(93L, "Áo Ngũ Thân Tay Chẽn")));
+        when(culturalItemRepository.findByCategory("ACCESSORY"))
+                .thenReturn(List.of(garment(24L, "Mấn & Khăn Đóng Truyền Thống")));
+        OutfitPreferenceRequest request = new OutfitPreferenceRequest();
+        request.setGender("female"); request.setOccasion("Dịp Tết Nguyên Đán");
+        request.setRegion("Miền Bắc"); request.setStyle("Tân thời Duyên dáng");
+        request.setPreferredColors(List.of("#C0392B", "#D4AF37"));
+
+        var recommendations = outfitService.generateRecommendations(request);
+        assertEquals("Áo Dài", recommendations.get(0).getPrimaryGarment());
+        assertEquals(3, recommendations.stream().map(OutfitRecommendationResponse::getColors).distinct().count());
+        assertTrue(recommendations.stream().allMatch(item -> !item.getMatchReasons().isEmpty()));
+        assertTrue(recommendations.get(0).getMatchReasons().stream().anyMatch(reason -> reason.contains("tân thời")));
+        assertEquals(3, recommendations.stream().map(OutfitRecommendationResponse::getStylingAdvice).distinct().count());
+        assertTrue(recommendations.stream().anyMatch(item -> item.getAccessories().isEmpty()));
+        assertTrue(recommendations.stream().anyMatch(item -> !item.getAccessories().isEmpty()));
+    }
+
+    @Test
+    void everydayLookDoesNotAutomaticallyAddCeremonialHeadwear() {
+        when(culturalItemRepository.findByCategory("GARMENT"))
+                .thenReturn(List.of(garment(93L, "Áo Ngũ Thân Tay Chẽn")));
+        when(culturalItemRepository.findByCategory("ACCESSORY"))
+                .thenReturn(List.of(garment(24L, "Mấn & Khăn Đóng Truyền Thống")));
+        OutfitPreferenceRequest request = new OutfitPreferenceRequest();
+        request.setOccasion("Sinh hoạt hằng ngày");
+        request.setGender("female");
+        assertTrue(outfitService.generateRecommendations(request).get(0).getAccessories().isEmpty());
+    }
+
+    @Test
     void missingOrAccessoryIdsAreRejectedAsPrimaryGarments() {
         when(culturalItemRepository.findByCategory("GARMENT")).thenReturn(List.of(garment(3L, "Áo Tấc")));
         OutfitPreferenceRequest request = new OutfitPreferenceRequest();

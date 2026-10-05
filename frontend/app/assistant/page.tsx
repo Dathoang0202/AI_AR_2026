@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { sendAssistantChat } from '@/services/assistantApi';
 import { CulturalSource } from '@/types';
-import { MessageSquare, Send, Bot, Sparkles, User, ExternalLink, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Send, Bot, Sparkles, User, ExternalLink, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 
 interface ChatMessage {
   sender: 'user' | 'assistant';
@@ -31,17 +30,23 @@ export default function AssistantPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const sendMessageText = async (textToSend: string) => {
-    if (!textToSend.trim()) return;
+    const message = textToSend.trim();
+    if (!message || loading) return;
 
-    setMessages((prev) => [...prev, { sender: 'user', text: textToSend }]);
+    const history = messages.slice(1).slice(-8).map((entry) => ({
+      role: entry.sender,
+      content: entry.text,
+    }));
+    setMessages((prev) => [...prev, { sender: 'user', text: message }]);
     setInputMsg('');
     setLoading(true);
     setErrorMsg(null);
 
     try {
       const res = await sendAssistantChat({
-        message: textToSend,
+        message,
         conversationId,
+        history,
       });
 
       if (res.success && res.data) {
@@ -57,9 +62,13 @@ export default function AssistantPage() {
         ]);
       } else {
         setErrorMsg(res.error?.message || 'Không thể lấy câu trả lời từ AI Assistant.');
+        setMessages((prev) => prev.slice(0, -1));
+        setInputMsg(message);
       }
-    } catch (err) {
+    } catch {
       setErrorMsg('Lỗi kết nối máy chủ REST API');
+      setMessages((prev) => prev.slice(0, -1));
+      setInputMsg(message);
     } finally {
       setLoading(false);
     }
@@ -124,7 +133,7 @@ export default function AssistantPage() {
                 {/* Sources & Citations list */}
                 {m.sources && m.sources.length > 0 && (
                   <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/80 text-[11px] space-y-1">
-                    <p className="font-bold text-amber-950 uppercase text-[10px]">Trích dẫn sử liệu xác thực:</p>
+                    <p className="font-bold text-amber-950 uppercase text-[10px]">Nguồn tham khảo trong dữ liệu:</p>
                     {m.sources.map((src, sIdx) => (
                       <div key={sIdx} className="flex justify-between items-center text-stone-700">
                         <span>• {src.title} ({src.publisher})</span>
@@ -151,6 +160,7 @@ export default function AssistantPage() {
                       <button
                         key={aIdx}
                         onClick={() => sendMessageText(action)}
+                        disabled={loading}
                         className="px-3 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-full text-[11px] font-semibold transition-all flex items-center space-x-1"
                       >
                         <span>{action}</span>
@@ -166,7 +176,7 @@ export default function AssistantPage() {
           {loading && (
             <div className="flex items-center space-x-2 text-xs text-stone-400 italic">
               <Loader2 className="w-4 h-4 animate-spin text-amber-700" />
-              <span>Trợ lý AI đang truy vấn CSDL di sản & tạo phản hồi xác thực...</span>
+              <span>Trợ lý đang tìm thông tin và soạn câu trả lời...</span>
             </div>
           )}
         </div>
@@ -177,6 +187,7 @@ export default function AssistantPage() {
             type="text"
             value={inputMsg}
             onChange={(e) => setInputMsg(e.target.value)}
+            maxLength={2000}
             placeholder="Đặt câu hỏi về Áo Nhật Bình, Áo Giao Lĩnh, quy chuẩn nghi lễ..."
             className="flex-1 px-4 py-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none"
           />

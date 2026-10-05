@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/outfits/recommend").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/outfits/validate").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/assistant/chat").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/cultural-items/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/rentals/**").permitAll()
                 .anyRequest().authenticated()

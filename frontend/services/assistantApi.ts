@@ -4,6 +4,7 @@ import { ApiResponse, CulturalSource } from '@/types';
 export interface AssistantRequest {
   message: string;
   conversationId?: string;
+  history?: { role: 'user' | 'assistant'; content: string }[];
 }
 
 export interface AssistantResponse {
