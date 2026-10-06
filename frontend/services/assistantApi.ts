@@ -14,9 +14,10 @@ export interface AssistantResponse {
   suggestedActions: string[];
 }
 
-export async function sendAssistantChat(payload: AssistantRequest): Promise<ApiResponse<AssistantResponse>> {
+export async function sendAssistantChat(payload: AssistantRequest, signal?: AbortSignal): Promise<ApiResponse<AssistantResponse>> {
   return fetchApi<AssistantResponse>('/assistant/chat', {
     method: 'POST',
     body: JSON.stringify(payload),
+    signal,
   });
 }

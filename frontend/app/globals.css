@@ -4,6 +4,9 @@
 
 @layer base {
   html {
+    /* Keep text readable while generated font classes are unavailable. */
+    --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Playfair Display', Georgia, serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
