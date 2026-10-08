@@ -13,7 +13,7 @@ public class HomeController {
     public ResponseEntity<Map<String, Object>> home() {
         return ResponseEntity.ok(Map.of(
                 "status", "UP",
-                "message", "Việt Phục Studio REST API Server is running successfully!",
+                "message", "vlaura REST API Server is running successfully!",
                 "h2Console", "http://localhost:8080/h2-console",
                 "frontendUrl", "http://localhost:3000"
         ));

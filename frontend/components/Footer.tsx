@@ -26,8 +26,7 @@ export function Footer() {
     <div className="site-footer-inner">
       <div className="site-footer-main">
         <div className="site-footer-brand">
-          <Link href="/" className="site-footer-logo" aria-label="Việt Phục Studio — Trang chủ"><span className="site-footer-monogram" aria-hidden="true">VP</span><span>VIỆT PHỤC STUDIO<small>TINH HOA ÁO MŨ VIỆT</small></span></Link>
-          <p className="site-footer-tagline">Một nét Việt.<br /><em>Một cách kể riêng.</em></p>
+          <Link href="/" className="site-footer-logo" aria-label="vlaura — Trang chủ"><span className="site-footer-logo-art" aria-hidden="true" /><span className="sr-only">vlaura</span></Link>
           <p className="site-footer-description">Khám phá câu chuyện y phục, thử những cách phối mới và giữ lại cảm hứng của bạn.</p>
         </div>
 
@@ -36,7 +35,7 @@ export function Footer() {
         <div className="site-footer-sources"><BookOpen size={23} strokeWidth={1.4} aria-hidden="true" /><h2>Hiểu để thêm yêu</h2><p>Câu chuyện, hình ảnh và nguồn tham khảo được đặt trong hồ sơ của từng y phục.</p><Link href="/cultural">Tìm hiểu từ bộ sưu tập<ArrowUpRight size={15} aria-hidden="true" /></Link></div>
       </div>
 
-      <div className="site-footer-bottom"><p>© {new Date().getFullYear()} Việt Phục Studio</p><span>Gìn giữ vẻ đẹp trong từng nếp áo.</span><button type="button" onClick={backToTop}>Lên đầu trang<ArrowUp size={15} aria-hidden="true" /></button></div>
+      <div className="site-footer-bottom"><p>© {new Date().getFullYear()} vlaura</p><span>Khí chất thiên thu.</span><button type="button" onClick={backToTop}>Lên đầu trang<ArrowUp size={15} aria-hidden="true" /></button></div>
     </div>
   </footer>;
 }

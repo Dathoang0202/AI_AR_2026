@@ -22,7 +22,7 @@ export default function HomePage() {
     <section className="home-hero" aria-labelledby="home-title">
       <div className="home-hero-copy">
         <p className="home-eyebrow"><span />DI SẢN TRONG ĐỜI SỐNG HÔM NAY</p>
-        <h1 id="home-title">Mặc một nét Việt.<br /><em>Kể một câu chuyện.</em></h1>
+        <h1 id="home-title">Khí chất<br /><em>thiên thu.</em></h1>
         <p className="home-intro">Từ câu chuyện của những nếp áo đến bộ phối mang dấu ấn của bạn. Cùng khám phá, thử mặc và tìm cảm hứng từ Việt phục.</p>
         <div className="home-actions">
           <Link href="/onboarding" className="home-button home-button-primary">Tạo bộ phối của bạn <ArrowRight size={17} /></Link>

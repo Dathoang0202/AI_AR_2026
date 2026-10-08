@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Sparkles, BookOpen, MapPin, Bookmark, MessageSquare, Shirt, User, LogOut } from 'lucide-react';
+import './navbar.css';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -24,15 +25,9 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-amber-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Logo */}
-          <Link href="/" className="group flex shrink-0 items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-700 via-red-700 to-amber-500 flex items-center justify-center text-white font-serif font-bold text-xl shadow-md group-hover:scale-105 transition-transform">
-              VP
-            </div>
-            <div className="flex flex-col md:hidden xl:flex">
-              <span className="font-serif text-sm font-bold leading-tight text-red-900 sm:text-lg">VIỆT PHỤC STUDIO</span>
-              <span className="text-[10px] tracking-widest text-amber-700 uppercase">Tinh Hoa Áo Mũ Việt</span>
-            </div>
+          <Link href="/" className="site-navbar-brand" aria-label="vlaura — Trang chủ">
+            <span className="site-navbar-logo" aria-hidden="true" />
+            <span className="site-navbar-copy"><span className="site-navbar-wordmark" aria-hidden="true" /><small>VIETNAM LUXURY AURA</small></span>
           </Link>
 
           {/* Nav Links */}

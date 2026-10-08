@@ -60,7 +60,7 @@ export const AuthModal: React.FC = () => {
           >
             <X className="w-5 h-5" />
           </button>
-          <h2 className="text-xl font-serif font-bold text-amber-200">Tài khoản Việt Phục Studio</h2>
+          <h2 className="text-xl font-serif font-bold text-amber-200">Tài khoản vlaura</h2>
           <p className="text-xs text-amber-100/80 mt-1">Đăng nhập để lưu trang phục & quản lý lookbook cá nhân</p>
 
           {/* Tabs */}

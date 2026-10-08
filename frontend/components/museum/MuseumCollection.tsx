@@ -123,6 +123,6 @@ export function MuseumCollection() {
         : <><div className="museum-grid">{filteredItems.slice(0, visibleCount).map(item => <ArtifactCard key={item.id} item={item} returnTo={returnTo} />)}</div>
           <div className="museum-collection-end"><span>Đang trưng bày {Math.min(visibleCount, filteredItems.length)} / {filteredItems.length} hiện vật</span>{visibleCount < filteredItems.length && <button className="museum-button museum-button-outline" onClick={() => setVisibleCount(count => count + 8)}>Khám phá thêm hiện vật <ArrowDown size={16} /></button>}</div></>}
     </section>
-    <aside className="museum-closing-note"><Landmark size={23} strokeWidth={1.2} /><p>Di sản không chỉ để ngắm nhìn.<br /><em>Di sản là để thấu hiểu và tiếp nối.</em></p><span>VIỆT PHỤC STUDIO</span></aside>
+    <aside className="museum-closing-note"><Landmark size={23} strokeWidth={1.2} /><p>Di sản không chỉ để ngắm nhìn.<br /><em>Di sản là để thấu hiểu và tiếp nối.</em></p><span>vlaura</span></aside>
   </>;
 }

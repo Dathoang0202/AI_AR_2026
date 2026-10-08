@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './museum.css';
 
 export const metadata: Metadata = {
-  title: 'Bảo Tàng & Lịch Sử | Việt Phục Studio',
+  title: 'Bảo Tàng & Lịch Sử | vlaura',
   description: 'Khám phá bộ sưu tập y phục Việt Nam, tìm hiểu niên đại, ý nghĩa văn hóa và nguồn tư liệu của từng trang phục.',
 };
 

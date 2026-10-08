@@ -1,6 +1,6 @@
-# Việt Phục Studio (AI & Traditional Vietnamese Clothing Web App)
+# vlaura — khí chất thiên thu
 
-> **Việt Phục Studio** là ứng dụng web toàn diện hỗ trợ khám phá, gợi ý phối đồ, kiểm định chuẩn mực văn hóa nghi lễ và tra cứu tri thức di sản y phục truyền thống Việt Nam (*Áo Nhật Bình, Áo Giao Lĩnh, Áo Tấc, Áo Ngũ Thân, Áo Dài*).
+> **vlaura** là ứng dụng web hỗ trợ khám phá, gợi ý phối đồ, kiểm định chuẩn mực văn hóa nghi lễ và tra cứu tri thức di sản y phục truyền thống Việt Nam (*Áo Nhật Bình, Áo Giao Lĩnh, Áo Tấc, Áo Ngũ Thân, Áo Dài*).
 
 ---
 

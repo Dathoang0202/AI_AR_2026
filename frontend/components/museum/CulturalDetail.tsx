@@ -45,7 +45,7 @@ export function CulturalDetail({ id }: { id: number }) {
 
   useEffect(() => {
     if (!item) return;
-    document.title = `${item.name} | Bảo Tàng Việt Phục`;
+    document.title = `${item.name} | vlaura`;
     let active = true;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);

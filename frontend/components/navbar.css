@@ -1,0 +1,36 @@
+.site-navbar-brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 64px;
+  color: #792e29;
+}
+
+.site-navbar-logo {
+  display: block;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  -webkit-mask: url('/images/vlaura-emblem.png') center / contain no-repeat;
+  mask: url('/images/vlaura-emblem.png') center / contain no-repeat;
+}
+
+.site-navbar-copy { display: flex; flex-direction: column; align-items: center; gap: 1px; white-space: nowrap; }
+.site-navbar-wordmark {
+  display: block;
+  width: 170px;
+  height: 35px;
+  background-color: currentColor;
+  -webkit-mask: url('/images/vlaura-header-wordmark.png') center 30% / 190px auto no-repeat;
+  mask: url('/images/vlaura-header-wordmark.png') center 30% / 190px auto no-repeat;
+}
+.site-navbar-copy small { color: #792e29; font-size: 8px; line-height: 1.2; letter-spacing: .15em; }
+
+@media (max-width: 374px) {
+  .site-navbar-brand { gap: 5px; }
+  .site-navbar-logo { width: 44px; height: 44px; }
+  .site-navbar-wordmark { width: 135px; height: 30px; -webkit-mask-size: 150px auto; mask-size: 150px auto; }
+  .site-navbar-copy small { font-size: 7px; letter-spacing: .08em; }
+}

@@ -21,8 +21,8 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'Việt Phục Studio — Khám Phá & Phối Đồ Trang Phục Truyền Thống Việt Nam',
-  description: 'Nền tảng ứng dụng web thông minh giúp tìm hiểu, gợi ý, phối đồ Việt Phục và kiểm tra chuẩn mực văn hóa di sản.',
+  title: 'vlaura — khí chất thiên thu',
+  description: 'vlaura — khí chất thiên thu. Khám phá Việt phục, phối đồ và tìm hiểu di sản y phục Việt Nam.',
 };
 
 export default function RootLayout({
