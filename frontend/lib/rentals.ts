@@ -3,7 +3,7 @@ import type { RentalProviderResponse } from '@/services/rentalApi';
 export type RentalPosition = { latitude: number; longitude: number };
 
 export function startingPrice(provider: RentalProviderResponse) {
-  const prices = provider.items.map(item => Number(item.pricePerDay)).filter(price => Number.isFinite(price) && price >= 0);
+  const prices = provider.items.map(item => Number(item.pricePerDay)).filter(price => Number.isFinite(price) && price > 0);
   return prices.length ? Math.min(...prices) : undefined;
 }
 

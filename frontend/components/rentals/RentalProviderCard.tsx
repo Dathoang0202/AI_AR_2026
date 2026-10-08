@@ -10,7 +10,7 @@ export function RentalProviderCard({ provider, index, distance }: { provider: Re
 
   return <article className="rental-card" data-provider-id={provider.id} aria-labelledby={`provider-${provider.id}`}>
     <div className="rental-provider-info">
-      <div className="rental-provider-meta"><span className="rental-provider-number">{String(index + 1).padStart(2, '0')}</span><span className="rental-city-label"><MapPin size={12} />{provider.city}</span>{provider.isDemoData && <span className="rental-demo-badge">Demo data</span>}</div>
+      <div className="rental-provider-meta"><span className="rental-provider-number">{String(index + 1).padStart(2, '0')}</span><span className="rental-city-label"><MapPin size={12} />{provider.city}</span></div>
       <h3 id={`provider-${provider.id}`}>{provider.name}</h3>
       <p className="rental-address"><MapPin size={15} /><span>{provider.address}</span></p>
       {provider.phone && <a href={`tel:${provider.phone}`} className="rental-phone"><Phone size={14} /><span>{provider.phone}</span></a>}
@@ -23,7 +23,7 @@ export function RentalProviderCard({ provider, index, distance }: { provider: Re
     </div>
     <div className="rental-inventory">
       <div className="rental-inventory-heading"><span><Store size={14} />DANH MỤC CHO THUÊ</span><span>{provider.items.length} lựa chọn</span></div>
-      {provider.items.length ? <table className="rental-price-table"><caption className="sr-only">Trang phục, phân loại và giá thuê theo ngày tại {provider.name}</caption><thead><tr><th scope="col">Trang phục / Phân loại</th><th scope="col">Giá mỗi ngày</th></tr></thead><tbody>{provider.items.map(item => <tr key={item.id} data-rental-item={item.id}><td><span className="rental-item-name">{item.name}</span><span className="rental-item-category">{item.category}</span></td><td><strong>{Number.isFinite(Number(item.pricePerDay)) ? `${rentalPrice(Number(item.pricePerDay))} đ` : 'Liên hệ'}</strong><span>/ ngày</span></td></tr>)}</tbody></table> : <p className="rental-no-items">Danh mục và giá đang được cập nhật. Liên hệ cửa hàng để biết thêm.</p>}
+      {provider.items.length ? <table className="rental-price-table"><caption className="sr-only">Trang phục, phân loại và giá thuê theo ngày tại {provider.name}</caption><thead><tr><th scope="col">Trang phục / Phân loại</th><th scope="col">Giá mỗi ngày</th></tr></thead><tbody>{provider.items.map(item => <tr key={item.id} data-rental-item={item.id}><td><span className="rental-item-name">{item.name}</span><span className="rental-item-category">{item.category}</span></td><td><strong>{item.priceDisplay || (item.pricePerDay !== null && Number.isFinite(Number(item.pricePerDay)) ? `${rentalPrice(Number(item.pricePerDay))} đ` : 'Liên hệ')}</strong><span>/ ngày</span></td></tr>)}</tbody></table> : <p className="rental-no-items">Danh mục và giá đang được cập nhật. Liên hệ cửa hàng để biết thêm.</p>}
       {price !== undefined && <div className="rental-starting-price"><span>Giá khởi điểm tại cửa hàng</span><p>Từ <strong>{rentalPrice(price)} đ</strong><span> / ngày</span></p></div>}
     </div>
   </article>;

@@ -47,7 +47,7 @@ public class OutfitService {
                     .filter(item -> item.getId().equals(request.getCulturalItemId())).findFirst()
                     .orElseThrow(() -> new BusinessRuleException("INVALID_GARMENT", "Y phục đã chọn không còn trong bảo tàng. Vui lòng chọn lại."));
             if (!supportsGender(selected, male)) {
-                throw new BusinessRuleException("INCOMPATIBLE_GARMENT", "Y phục này đang được gợi ý cho ma-nơ-canh nữ. Hãy đổi ma-nơ-canh hoặc chọn y phục khác.");
+                throw new BusinessRuleException("INCOMPATIBLE_GARMENT", "Biến thể y phục này không khớp với dáng người đã chọn trong danh mục phục dựng. Hãy đổi ma-nơ-canh hoặc chọn y phục khác.");
             }
             garments = List.of(selected);
         }
@@ -57,6 +57,7 @@ public class OutfitService {
                 .filter(value -> !value.isEmpty()).distinct().limit(8).toList();
         List<String> preferredPalette = colors.isEmpty() ? List.of("#C0392B", "#1E4D2B", "#FDFBF7") : colors;
         List<CulturalItem> ranked = garments.stream().filter(item -> supportsGender(item, male))
+                .filter(item -> request.getCulturalItemId() != null || !GarmentRules.needsSpecificReference(item.getName()))
                 .filter(item -> GarmentRules.supportsOccasion(item.getName(), request.getOccasion()))
                 .sorted(Comparator.<CulturalItem>comparingInt(item -> recommendationScore(item, request)).reversed()
                         .thenComparing(CulturalItem::getId)).limit(3)
@@ -65,7 +66,10 @@ public class OutfitService {
                     CulturalItem item = ranked.get(index);
                     boolean fourPanel = normalized(item.getName()).contains("tu than");
                     String name = normalized(item.getName());
-                    String underlayer = fourPanel ? "Yếm và váy" : name.contains("trang phuc nu thai (thanh hoa)")
+                    String underlayer = name.contains("ao yem") ? "Váy" : name.contains("con mien") ? "Thường, tế tất và mũ miện"
+                            : name.contains("doi kham") ? "Áo trong và quần lụa"
+                            : name.contains("tran thu") || name.contains("vat ho") || name.contains("ngu lam") ? "Quần vải"
+                            : fourPanel ? "Yếm và váy" : name.contains("trang phuc nu thai (thanh hoa)")
                             ? "Váy và thắt lưng" : name.contains("ao dai") || name.contains("ao ba ba")
                             || name.contains("tay chen") ? "Quần dài" : "Quần lụa";
                     List<String> palette = recommendationPalette(preferredPalette, index,
@@ -129,7 +133,18 @@ public class OutfitService {
         // This local Thai ensemble has no matching accessory record yet.
         if (name.contains("trang phuc nu thai (thanh hoa)")) return List.of();
         List<String> result = new ArrayList<>();
-        if (name.contains("ao ba ba")) {
+        if (name.contains("tran thu") || GarmentRules.needsSpecificReference(name)) return List.of();
+        if (GarmentRules.isCourtGarment(name)) {
+            if (name.contains("bo tu") || name.contains("vien linh")) addAccessory(result, catalog, "canh chuon", male);
+            if (!name.contains("con mien")) addAccessory(result, catalog, "dai ngoc", male);
+            addAccessory(result, catalog, "hai cung dinh", male);
+        } else if (name.contains("ao yem") || (name.contains("tu than") && catalog.stream().anyMatch(item -> normalized(item.getName()).contains("quai thao")))) {
+            addAccessory(result, catalog, name.contains("ao yem") ? "mo qua" : "quai thao", male);
+            addAccessory(result, catalog, "guoc moc", male);
+        } else if (name.contains("doi kham")) {
+            addAccessory(result, catalog, "tram cai", male);
+            addAccessory(result, catalog, "guoc moc", male);
+        } else if (name.contains("ao ba ba") || name.contains("vat ho")) {
             addAccessory(result, catalog, "khan ran", male);
             addAccessory(result, catalog, "non la", male);
         } else {
@@ -166,15 +181,20 @@ public class OutfitService {
         int score = regionScore(item, request.getRegion());
         if (style.contains("hoang gia")) {
             if (name.contains("nhat binh")) score += 9;
+            else if (name.contains("hoang bao") || name.contains("phuong bao")) score += 10;
+            else if (name.contains("mang bao") || name.contains("con mien")) score += 7;
+            else if (GarmentRules.isCourtGarment(name)) score += 4;
             else if (name.contains("ao tac")) score += 3;
         } else if (style.contains("si phu")) {
             if (name.contains("ao tac") || name.contains("tay chen")) score += 8;
+            else if (name.contains("vien linh") || name.contains("doi kham")) score += 7;
             else if (name.contains("giao linh")) score += 3;
         } else if (style.contains("tan thoi")) {
             if (name.contains("ao dai")) score += 9;
             else if (name.contains("tay chen")) score += 3;
         } else if (style.contains("dan gian")) {
             if (name.contains("tu than") || name.contains("ao ba ba") || name.contains("trang phuc nu thai")) score += 8;
+            else if (name.contains("vat ho") || name.contains("ao yem")) score += 7;
             else if (name.contains("giao linh")) score += 2;
         }
         if (occasion.contains("cuoi")) {
@@ -199,6 +219,8 @@ public class OutfitService {
             else if (name.contains("ao dai")) score += 3;
             else if (name.contains("ao tac")) score -= 5;
         }
+        if (GarmentRules.isCourtGarment(name) && !style.contains("hoang gia")) score -= 6;
+        if ((name.contains("tran thu") || name.contains("ngu lam")) && !occasion.contains("chup anh")) score -= 8;
         return score;
     }
 
@@ -217,6 +239,13 @@ public class OutfitService {
         String style = normalized(request.getStyle());
         String occasion = normalized(request.getOccasion());
         List<String> reasons = new ArrayList<>();
+        if (GarmentRules.isWorkbookGarment(name)) {
+            if (GarmentRules.isCourtGarment(name)) reasons.add("Thử phom áo cung đình theo cảm hứng đã chọn; cần đối chiếu phẩm cấp, niên đại và nghi thức trước khi phục dựng.");
+            else if (name.contains("ao yem")) reasons.add("Yếm được mô phỏng cùng váy; cần cân nhắc lớp áo ngoài theo dịp sử dụng.");
+            else if (name.contains("doi kham")) reasons.add("Hai vạt mở và lớp áo trong tạo một phương án phối nhiều lớp.");
+            else if (name.contains("vat ho")) reasons.add("Áo thân ngắn tạo hướng phối dân gian gọn gàng.");
+            else reasons.add("Mô phỏng từ danh mục bổ sung; đối chiếu tư liệu riêng khi phục dựng lịch sử.");
+        }
         if (style.contains("hoang gia") && name.contains("nhat binh"))
             reasons.add("Lễ phục cung đình hợp cảm hứng hoàng gia bạn chọn.");
         else if (style.contains("si phu") && (name.contains("ao tac") || name.contains("tay chen")))

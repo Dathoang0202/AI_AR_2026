@@ -3,6 +3,10 @@
 import { useId } from 'react';
 import { garmentKind } from '@/lib/outfit';
 import { normalizeCulturalText } from '@/lib/cultural';
+import { workbookVisual } from '@/lib/workbookCatalog';
+import { WorkbookAccessory } from './WorkbookLayers';
+import { WorkbookGarment, WorkbookTrousers, workbookCut } from './WorkbookGarment';
+import { ConicalHat, FoldingFan, WrappedHeadwear } from './TraditionalAccessories';
 
 interface Props {
   garment: string;
@@ -10,6 +14,7 @@ interface Props {
   colorHex: string;
   accessories: string[];
   gender: 'female' | 'male';
+  presentation?: 'mannequin' | 'garment';
 }
 
 function tint(hex: string, target: string, amount: number) {
@@ -19,21 +24,33 @@ function tint(hex: string, target: string, amount: number) {
 }
 
 /** A layered fitting illustration: body, undergarment, sleeves, outer garment, accessories. */
-export function MannequinFigure({ garment, colorName, colorHex, accessories, gender }: Props) {
+export function MannequinFigure({ garment, colorName, colorHex, accessories, gender, presentation = 'mannequin' }: Props) {
   const id = `figure-${useId().replace(/:/g, '')}`;
   const fill = (name: string) => `url(#${id}-${name})`;
   const kind = garmentKind(garment);
   const male = gender === 'male';
+  const showBody = presentation === 'mannequin';
+  const workbook = workbookVisual(normalizeCulturalText(garment));
+  const extended = workbook?.category === 'GARMENT';
+  if (kind === 'other') return <svg role="img" aria-label={`Chưa có mô phỏng riêng cho ${garment}`} data-garment-kind="other" data-preview-unavailable data-color={colorHex} data-fit={gender} viewBox="0 20 360 540" className="h-full w-full">
+    <rect x="56" y="115" width="248" height="290" rx="120" fill="#F8F4EC" stroke="#DDD0BE" />
+    <g transform="translate(144 190) scale(3)" fill="none" stroke="#9B8062" strokeWidth=".8" strokeLinejoin="round"><path d="M16 3L21 6L18 11L16 9V21H8V9L6 11L3 6L8 3Q12 7 16 3Z" /></g>
+    <text x="180" y="304" textAnchor="middle" fill="#76624C" fontSize="12" fontFamily="var(--font-sans)">Chưa có mô phỏng riêng</text>
+    <text x="180" y="329" textAnchor="middle" fill="#998671" fontSize="10" fontFamily="var(--font-sans)">Y phục đã được thêm vào bộ phối.</text>
+    <text x="180" y="349" textAnchor="middle" fill="#998671" fontSize="10" fontFamily="var(--font-sans)">Bạn có thể xem tư liệu trong bảo tàng.</text>
+  </svg>;
   const shoulder = male ? 55 : 43;
   const waist = male ? 38 : 28;
   const left = 180 - shoulder;
   const right = 180 + shoulder;
   const hemLeft = left - 18;
   const hemRight = right + 18;
-  const narrowSleeve = ['ao-dai', 'tu-than', 'ngu-than', 'ba-ba', 'thai-thanh-hoa'].includes(kind);
+  const cut = extended ? workbookCut(kind, male) : undefined;
+  const narrowSleeve = cut ? cut.narrow : ['ao-dai', 'tu-than', 'ngu-than', 'ba-ba', 'thai-thanh-hoa'].includes(kind);
   const names = accessories.map(normalizeCulturalText);
   const headwear = names.some(name => name.includes('non la')) ? 'non-la' : names.some(name => name.includes('khan dong')) ? 'khan-dong' : names.some(name => /\bman\b/.test(name)) ? 'man' : undefined;
-  const necklace = names.some(name => name.includes('vong co') || name.includes('kieng'));
+  const necklace = names.some(name => name.includes('vong co'));
+  const newAccessories = names.map(workbookVisual).filter(entry => entry?.category === 'ACCESSORY');
   const fan = names.some(name => name.includes('quat'));
   const scarf = names.some(name => name.includes('khan ran'));
   const light = tint(colorHex, '#FFFFFF', .29);
@@ -45,14 +62,14 @@ export function MannequinFigure({ garment, colorName, colorHex, accessories, gen
   const tunic = `M${left} 144 Q180 132 ${right} 144 C${right + 4} 179 ${180 + waist} 216 ${180 + waist} 250 C${180 + waist + 7} 315 ${right - 1} 401 ${right + 5} 478 Q180 493 ${left - 5} 478 C${left + 1} 401 ${180 - waist - 7} 315 ${180 - waist} 250 C${180 - waist} 216 ${left - 4} 179 ${left} 144Z`;
   const wideSleeve = `M${left + 5} 143 C${left - 18} 145 ${left - 27} 177 ${left - 38} 207 L${left - 64} 270 Q${left - 55} 292 ${left - 28} 305 L${left - 3} 278 Q${left + 7} 217 ${left + 10} 169Z`;
   const slimSleeve = `M${left + 5} 143 C${left - 12} 147 ${left - 19} 184 ${left - 20} 228 L${left - 14} 303 Q${left - 4} 308 ${left + 6} 302 L${left + 3} 238 Q${left + 10} 203 ${left + 13} 163Z`;
-  const handX = narrowSleeve ? left - 4 : left - 28;
+  const handX = cut?.handX ?? (narrowSleeve ? left - 4 : left - 28);
   const outerLeft = `M${left} 144 Q${left + 12} 139 164 144 C164 183 163 226 177 270 C159 315 ${left + 9} 389 ${left - 5} 465 Q${left - 17} 469 ${hemLeft} 461 L${left + 3} 276 C${left + 8} 226 ${left - 3} 186 ${left} 144Z`;
 
   function Fabric({ d, className }: { d: string; className?: string }) {
     return <g className={className}><path d={d} fill={fill('cloth')} stroke={seam} strokeWidth=".7" strokeLinejoin="round" /><path d={d} fill={fill('weave')} opacity=".055" /></g>;
   }
 
-  return <svg role="img" aria-label={`Ma-nơ-canh ${male ? 'nam' : 'nữ'} mặc ${garment}, màu ${colorName}`} data-garment-kind={kind} data-color={colorHex} data-fit={gender} viewBox="0 20 360 540" className="h-full w-full">
+  return <svg role="img" aria-label={showBody ? `Ma-nơ-canh ${male ? 'nam' : 'nữ'} mặc ${garment}, màu ${colorName}` : `Đồ họa ${garment}`} data-garment-kind={showBody ? kind : undefined} data-wardrobe-kind={!showBody ? kind : undefined} data-color={colorHex} data-fit={gender} viewBox={showBody ? '0 20 360 540' : kind === 'con-mien' ? '40 18 280 486' : '40 119 280 387'} className="h-full w-full">
     <defs>
       <linearGradient id={`${id}-cloth`} x1="0" y1="0" x2="1" y2=".2">
         <stop stopColor={shade} /><stop offset=".17" stopColor={colorHex} /><stop offset=".4" stopColor={light} /><stop offset=".62" stopColor={colorHex} /><stop offset=".88" stopColor={shade} /><stop offset="1" stopColor={colorHex} />
@@ -75,20 +92,20 @@ export function MannequinFigure({ garment, colorName, colorHex, accessories, gen
     </defs>
 
     {/* A quiet plinth anchors the figure without becoming part of the clothing. */}
-    <ellipse cx="180" cy="529" rx="107" ry="16" fill={fill('ground')} />
+    {showBody && <><ellipse cx="180" cy="529" rx="107" ry="16" fill={fill('ground')} />
     <path d="M104 515V522C104 538 256 538 256 522V515Z" fill={fill('stand')} />
     <ellipse cx="180" cy="515" rx="76" ry="13" fill="#EAE5DA" stroke="#D5CBBB" strokeWidth=".7" />
-    <path d="M177 424H183V514H177Z" fill="#B1A18A" />
+    <path d="M177 424H183V514H177Z" fill="#B1A18A" /></>}
 
     <g filter={fill('shadow')}>
       {/* Both forms share the same matte, featureless display material. */}
-      <g data-mannequin-body={gender}>
+      {showBody && <g data-mannequin-body={gender}>
         <path d={`M${180 - waist} 263Q180 246 ${180 + waist} 263L${male ? 215 : 209} 364L206 491Q196 500 187 491L180 370L173 491Q163 500 154 491L${male ? 145 : 151} 364Z`} fill={fill('body')} />
         <path d="M153 487Q164 491 175 486L175 507Q159 515 144 510Q143 500 153 487Z M185 486Q196 491 207 487L217 505Q219 511 209 512L185 509Z" fill={fill('body')} stroke="#B9AF9E" strokeWidth=".7" />
         <path d={`M169 104L168 135Q${left} 144 ${left - 4} 154L${left + 5} 220L${180 - waist} 263Q180 276 ${180 + waist} 263L${right - 5} 220L${right + 4} 154Q192 144 192 135L191 104Z`} fill={fill('body')} />
         <path d={male ? 'M180 48C198 48 205 61 204 80L201 96Q194 112 180 115Q166 112 159 96L156 80C155 61 162 48 180 48Z' : 'M180 48C195 48 202 61 201 79C200 98 192 113 180 114C168 113 160 98 159 79C158 61 165 48 180 48Z'} fill={fill('head')} stroke="#C9BEAD" strokeWidth=".5" />
         <path d="M166 64Q163 81 169 94" stroke="#FFFCF6" strokeWidth="1.4" strokeLinecap="round" opacity=".55" fill="none" />
-      </g>
+      </g>}
 
       {/* Separate trouser legs remain visible below the long outer garment. */}
       <g data-garment-layer="underlayer">
@@ -96,7 +113,11 @@ export function MannequinFigure({ garment, colorName, colorHex, accessories, gen
           <path d={`M${180 - waist - 3} 211Q180 202 ${180 + waist + 3} 211L${right + 3} 488Q180 498 ${left - 3} 488Z`} fill="#282B2A" stroke="#1D211E" strokeWidth=".7" />
           <path d={`M${180 - waist - 5} 294H${180 + waist + 5}L${right + 2} 486Q180 495 ${left - 2} 486Z`} fill={fill('textile')} />
           <path d={`M${180 - waist} 281Q180 289 ${180 + waist} 281M${left} 480Q180 491 ${right} 480`} stroke="#998770" strokeWidth="3" fill="none" />
-        </> : kind === 'tu-than' ? <>
+        </> : ['tran-thu', 'vat-ho', 'ngu-lam'].includes(kind) ? <WorkbookTrousers kind={kind} male={male} id={id} /> : kind === 'con-mien' ? <>
+          <path d={`M${180 - waist - 6} 261H${180 + waist + 6}L${right + 24} 493Q180 503 ${left - 24} 493Z`} fill="#854337" stroke="#65382D" />
+          {[-.8, -.4, 0, .4, .8].map((n, i) => <path key={n} d={`M${180 + n * waist} 282L${180 + n * (shoulder + 18)} 491`} stroke={i % 2 ? '#B16F51' : '#532E27'} strokeWidth="3" opacity=".35" />)}
+          <path d={`M${left - 21} 488Q180 498 ${right + 21} 488`} fill="none" stroke="#C7AD79" strokeWidth="2" />
+        </> : kind === 'tu-than' || kind === 'ao-yem' ? <>
           <path d={`M${180 - waist - 6} 259Q180 251 ${180 + waist + 6} 259L${right + 17} 489Q180 504 ${left - 17} 489Z`} fill={fill('skirt')} />
           {[left + 5, left + 23, right - 23, right - 5].map((x, i) => <path key={i} d={`M${180 + (x - 180) * .6} 280Q${x} 390 ${x + (x < 180 ? -7 : 7)} 488`} stroke={i % 2 ? '#BAB8A0' : '#1D241F'} strokeWidth={i % 2 ? 1 : 4} opacity=".22" fill="none" />)}
         </> : <>
@@ -108,15 +129,17 @@ export function MannequinFigure({ garment, colorName, colorHex, accessories, gen
 
       {/* Sleeves and wrists use the same shoulder measurement as the torso. */}
       {[false, true].map(mirror => <g key={String(mirror)} transform={mirror ? 'translate(360 0) scale(-1 1)' : undefined}>
-        <path d={`M${handX - 8} 299Q${handX - 11} 312 ${handX - 8} 323L${handX - 3} 335Q${handX} 338 ${handX + 2} 333L${handX + 1} 320Q${handX + 7} 329 ${handX + 9} 323L${handX + 5} 307L${handX + 7} 299Z`} fill={fill('body')} stroke="#C0B5A4" strokeWidth=".6" />
-        <Fabric d={narrowSleeve ? slimSleeve : wideSleeve} />
+        {showBody && <path d={`M${handX - 8} 299Q${handX - 11} 312 ${handX - 8} 323L${handX - 3} 335Q${handX} 338 ${handX + 2} 333L${handX + 1} 320Q${handX + 7} 329 ${handX + 9} 323L${handX + 5} 307L${handX + 7} 299Z`} fill={fill('body')} stroke="#C0B5A4" strokeWidth=".6" />}
+        {extended ? (showBody && cut?.sleeveless && <path d={slimSleeve} fill={fill('body')} stroke="#C0B5A4" strokeWidth=".6" />) : <Fabric d={narrowSleeve ? slimSleeve : wideSleeve} />}
+        {!extended && <>
         <path d={narrowSleeve ? `M${left - 11} 296Q${left - 3} 299 ${left + 5} 296` : `M${left - 59} 270Q${left - 47} 288 ${left - 26} 298`} stroke={kind === 'nhat-binh' ? trim : light} strokeWidth={kind === 'nhat-binh' ? 7 : 2} opacity=".8" fill="none" />
         <path d={narrowSleeve ? `M${left - 5} 175Q${left - 14} 232 ${left - 5} 287` : `M${left - 5} 170Q${left - 25} 219 ${left - 44} 273M${left + 3} 186Q${left - 9} 248 ${left - 26} 284`} stroke={shade} strokeWidth="2" opacity=".45" fill="none" />
         {kind === 'nhat-binh' && <path d={`M${left - 56} 276Q${left - 45} 291 ${left - 29} 301`} fill="none" stroke="#9B9E81" strokeWidth="3" />}
+        </>}
       </g>)}
 
       <g data-garment-cut data-shoulder-width={shoulder * 2}>
-        {kind === 'ba-ba' ? <>
+        {extended ? <WorkbookGarment kind={kind} male={male} color={colorHex} id={`${id}-workbook`} showCrown={!headwear && !newAccessories.some(entry => entry?.slot === 'headwear')} /> : kind === 'ba-ba' ? <>
           <Fabric d={`M${left} 144Q164 135 167 139Q180 153 193 139Q202 135 ${right} 144C${right + 2} 198 ${180 + waist} 228 ${right - 1} 308Q180 319 ${left + 1} 308C${180 - waist} 228 ${left - 2} 198 ${left} 144Z`} />
           <path d="M167 139Q180 154 193 139M180 148V313" fill="none" stroke={seam} strokeWidth="1.3" />
           {[166, 192, 218, 244, 270].map(y => <circle key={y} cx="180" cy={y} r="2" fill={light} stroke={seam} strokeWidth=".6" />)}
@@ -169,9 +192,7 @@ export function MannequinFigure({ garment, colorName, colorHex, accessories, gen
       </g>
 
       {headwear && <g data-mannequin-accessory="headwear" data-headwear-kind={headwear}>
-        {headwear === 'man' ? <><path d="M151 72C143 19 217 19 209 72L201 79C204 38 156 38 159 79Z" fill={fill('cloth')} stroke={seam} strokeWidth=".8" /><path d="M153 66C150 27 210 27 207 66" fill="none" stroke={trim} strokeWidth="2" /><path d="M156 68C153 33 207 33 204 68" fill="none" stroke={light} strokeWidth="1" /></>
-          : headwear === 'khan-dong' ? <><path d="M152 53C151 40 209 40 208 53L209 72Q180 84 151 72Z" fill="#353631" stroke="#242622" strokeWidth=".8" /><ellipse cx="180" cy="51" rx="28" ry="8" fill="#52534B" /><path d="M153 56Q180 68 207 56M153 62Q180 74 207 62M154 68Q180 79 206 68" fill="none" stroke="#939385" strokeWidth="1" /><path d="M175 54L181 68L187 55" fill="none" stroke="#A4A18E" strokeWidth="1.4" /></>
-          : <><path d="M180 28L125 86Q180 108 235 86Z" fill="#DCC79A" stroke="#A28D66" /><path d="M180 28L144 91M180 28L163 96M180 28V99M180 28L199 96M180 28L216 91" fill="none" stroke="#F6E8C5" strokeWidth="1.3" /><path d="M125 86Q180 102 235 86" fill="none" stroke="#8E7855" strokeWidth="2" /></>}
+        {headwear === 'non-la' ? <ConicalHat id={`${id}-hat`} /> : <WrappedHeadwear kind={headwear} fabric={fill('cloth')} seam={seam} trim={trim} light={light} />}
       </g>}
       {necklace && <path data-mannequin-accessory="necklace" d="M159 149C158 197 202 197 201 149" fill="none" stroke="#E5D9B9" strokeWidth="4" strokeDasharray=".4 4.6" strokeLinecap="round" />}
       {scarf && <g data-mannequin-accessory="scarf">
@@ -179,7 +200,8 @@ export function MannequinFigure({ garment, colorName, colorHex, accessories, gen
         <path d="M168 125Q180 139 192 125L197 137Q180 151 163 137Z" fill={fill('checks')} stroke="#5C5A51" strokeWidth=".8" />
         {[0, 4, 8, 12, 16].map(x => <path key={x} d={`M${left + 18 + x} ${287 + x / 4}V${295 + x / 4}M${right - 34 + x} ${304 - x / 4}V${312 - x / 4}`} stroke="#D8D1BF" strokeWidth="1.2" />)}
       </g>}
-      {fan && <g data-mannequin-accessory="fan" transform={`translate(${360 - handX} 318) rotate(-22)`}><path d="M0 0L-36-45Q0-72 36-45Z" fill="#E1D0AC" stroke="#9B835B" /><path d="M0 0L-27-49M0 0L-14-55M0 0V-59M0 0L14-55M0 0L27-49" stroke="#AB9370" strokeWidth=".8" /><circle r="2.5" fill="#93764E" /></g>}
+      {fan && <g data-mannequin-accessory="fan" transform={`translate(${360 - handX - 2} 318) rotate(-27) scale(.9)`}><FoldingFan id={`${id}-fan`} />{showBody && <path data-fan-grip d="M-5 2Q-1-3 4-1L7 2Q7 5 3 5L-4 5Z" fill={fill('body')} stroke="#BAAD99" strokeWidth=".65" />}</g>}
+      {newAccessories.map(entry => entry && <WorkbookAccessory key={entry.kind} kind={entry.kind} male={male} />)}
     </g>
   </svg>;
 }

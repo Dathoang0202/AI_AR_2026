@@ -52,6 +52,8 @@ public class CulturalItemService {
         res.setId(item.getId());
         res.setName(item.getName());
         res.setCategory(item.getCategory());
+        res.setItemType(item.getItemType());
+        res.setUsageCategory(item.getUsageCategory());
         res.setRegion(item.getRegion());
         res.setHistoricalPeriod(item.getHistoricalPeriod());
         res.setDescription(item.getDescription());

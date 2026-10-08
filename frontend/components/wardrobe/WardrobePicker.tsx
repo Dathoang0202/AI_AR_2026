@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Check, Search, RotateCcw, Shirt, Gem, ArrowUpRight } from 'lucide-react';
 import type { CulturalItemResponse } from '@/services/culturalApi';
 import { normalizeCulturalText } from '@/lib/cultural';
-import { ArtifactImage } from '@/components/museum/ArtifactImage';
+import { WardrobeIllustration } from './WardrobeIllustration';
 
 interface Props {
   items: CulturalItemResponse[];
@@ -16,9 +16,11 @@ interface Props {
   onSelect: (item: CulturalItemResponse) => void;
   showAccessories?: boolean;
   fill?: boolean;
+  gender?: 'female' | 'male';
+  selectedColor?: string;
 }
 
-export function WardrobePicker({ items, loading, error, onRetry, selectedIds, onSelect, showAccessories = true, fill = false }: Props) {
+export function WardrobePicker({ items, loading, error, onRetry, selectedIds, onSelect, showAccessories = true, fill = false, gender = 'female', selectedColor }: Props) {
   const [category, setCategory] = useState('GARMENT');
   const [query, setQuery] = useState('');
   const visible = items.filter(item => item.category === category && normalizeCulturalText(`${item.name} ${item.region || ''}`).includes(normalizeCulturalText(query.trim())));
@@ -45,8 +47,8 @@ export function WardrobePicker({ items, loading, error, onRetry, selectedIds, on
               onClick={() => onSelect(item)}
               className="group block w-full overflow-hidden rounded-xl text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-800"
             >
-              <span className="relative block aspect-[4/3] overflow-hidden bg-[#f2ede4] [&_img]:h-full [&_img]:w-full [&_img]:object-contain [&_img]:transition-transform group-hover:[&_img]:scale-105 [&_.museum-image-placeholder]:p-3">
-                <ArtifactImage name={item.name} src={item.imageUrl} />
+              <span className="relative block aspect-[4/3] overflow-hidden bg-[radial-gradient(ellipse_at_45%_30%,#fffdf6,#ede5d8)] [&>svg]:transition-transform group-hover:[&>svg]:scale-105">
+                <WardrobeIllustration item={item} gender={gender} color={selected ? selectedColor : undefined} />
                 {selected && <span className="absolute left-1.5 top-1.5 rounded-full bg-red-800 p-1 text-white"><Check size={11} /></span>}
               </span>
               <span className="block px-2 py-2"><span className="line-clamp-2 min-h-8 font-serif text-xs font-semibold leading-4 text-stone-900">{item.name}</span></span>

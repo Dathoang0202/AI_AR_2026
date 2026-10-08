@@ -6,9 +6,11 @@ import { useSearchParams } from 'next/navigation';
 import { AlertCircle, ArrowLeft, ArrowUpRight, BookOpen, Check, ChevronRight, ExternalLink, Landmark, Loader2, RotateCcw, Search, Share2, Shirt, X, ZoomIn } from 'lucide-react';
 import { CulturalItemResponse, getCulturalItemById, getCulturalItems } from '@/services/culturalApi';
 import { categoryLabel, getMuseumPhoto, safeSourceUrl } from '@/lib/cultural';
-import { museumStudioHref } from '@/lib/outfit';
+import { hasStudioPreview, museumStudioHref } from '@/lib/outfit';
 import { ArtifactImage } from './ArtifactImage';
 import { ArtifactCard } from './ArtifactCard';
+import { workbookVisual } from '@/lib/workbookCatalog';
+import { normalizeCulturalText } from '@/lib/cultural';
 
 export function CulturalDetail({ id }: { id: number }) {
   const searchParams = useSearchParams();
@@ -74,6 +76,7 @@ export function CulturalDetail({ id }: { id: number }) {
 
   const sources = item.sources || [];
   const photo = getMuseumPhoto(item.name);
+  const drawing = workbookVisual(normalizeCulturalText(item.name));
   const tabs = [ { id: 'story', label: 'Câu chuyện y phục' }, { id: 'meaning', label: 'Ý nghĩa văn hóa' }, { id: 'sources', label: `Nguồn tư liệu (${sources.length})` } ];
 
   return <>
@@ -96,9 +99,9 @@ export function CulturalDetail({ id }: { id: number }) {
         <h1 id="artifact-title">{item.name}</h1>
         <p className="museum-detail-era">{item.historicalPeriod || 'Niên đại đang được cập nhật'}</p>
         <p className="museum-detail-summary">{item.description}</p>
-        <dl className="museum-specifications"><div><dt>Niên đại</dt><dd>{item.historicalPeriod || 'Đang cập nhật'}</dd></div><div><dt>Vùng văn hóa</dt><dd>{item.region || 'Đang cập nhật'}</dd></div><div><dt>Phân loại</dt><dd>{categoryLabel(item.category)}</dd></div><div><dt>Tư liệu tham khảo</dt><dd>{sources.length ? `${sources.length} nguồn được đính kèm` : 'Đang bổ sung tư liệu'}</dd></div></dl>
+        <dl className="museum-specifications"><div><dt>Niên đại</dt><dd>{item.historicalPeriod || 'Đang cập nhật'}</dd></div><div><dt>Vùng văn hóa</dt><dd>{item.region || 'Đang cập nhật'}</dd></div><div><dt>Phân loại</dt><dd>{item.itemType || categoryLabel(item.category)}</dd></div><div><dt>Tư liệu tham khảo</dt><dd>{sources.length ? `${sources.length} nguồn được đính kèm` : 'Đang bổ sung tư liệu'}</dd></div>{item.usageCategory && <div><dt>Nhóm sử dụng</dt><dd>{item.usageCategory}</dd></div>}</dl>
         <div className="museum-detail-actions">
-          <Link className="museum-button museum-button-primary" href={museumStudioHref(item)}><Shirt size={18} />{item.category === 'GARMENT' ? 'Mặc thử trong Studio' : 'Thêm phụ kiện vào Studio'} <ArrowUpRight size={17} /></Link>
+          <Link className="museum-button museum-button-primary" href={museumStudioHref(item)}><Shirt size={18} />{!hasStudioPreview(item) ? 'Xem trong tủ đồ' : item.category === 'GARMENT' ? 'Mặc thử trong Studio' : 'Thêm phụ kiện vào Studio'} <ArrowUpRight size={17} /></Link>
           {item.category === 'GARMENT' && <Link className="museum-button museum-button-outline" href="/onboarding">Gợi ý theo bối cảnh <ArrowUpRight size={16} /></Link>}
           <button className="museum-button museum-button-outline" onClick={shareItem}>{shareState === 'copied' ? <Check size={17} /> : <Share2 size={17} />}{shareState === 'copied' ? 'Đã sao chép liên kết' : 'Chia sẻ tư liệu'}</button>
           <div role="status" className="museum-share-status">{shareState === 'copied' && 'Bạn có thể gửi liên kết này để chia sẻ trang phục.'}{shareState === 'manual' && <label>Sao chép liên kết để chia sẻ<input readOnly value={shareUrl} onFocus={event => event.target.select()} /></label>}</div>
@@ -130,6 +133,7 @@ export function CulturalDetail({ id }: { id: number }) {
             <h4><a href={photo.sourceUrl} target="_blank" rel="noopener noreferrer">{photo.title} <ExternalLink size={14} /></a></h4>
             <p>{photo.author}{photo.license && <> · <a href={photo.licenseUrl} target="_blank" rel="noopener noreferrer">{photo.license}</a></>}</p>
           </div>}
+          {drawing && <div className="museum-photo-source"><span className="museum-eyebrow">VỀ HÌNH MẶC THỬ TRONG STUDIO</span><p>Hình đồ họa trong Studio diễn tả phom dáng theo mô tả trong danh mục. Màu sắc và hoa văn được giản lược để mặc thử; không phải bản phục dựng một phẩm cấp, triều đại cụ thể.</p>{['co-man', 'bien-phuc', 'thu-kham', 'ngu-lam'].includes(drawing.kind) && <p>Tên gọi và biến thể của mục này còn cần tư liệu riêng để đối chiếu. Nội dung hiện tại giữ theo tài liệu được cung cấp.</p>}</div>}
         </div>}
       </div>
     </section>

@@ -13,7 +13,8 @@ import { OutfitNameEditor } from '@/components/studio/OutfitNameEditor';
 import { WardrobePicker } from '@/components/wardrobe/WardrobePicker';
 import { ColorPalette } from '@/components/wardrobe/ColorPalette';
 import { useMuseumCatalog } from '@/hooks/useMuseumCatalog';
-import { accessoryName, accessorySlot, colorName, garmentKind, occasionOptions, regionOptions, styleOptions, toColorHex } from '@/lib/outfit';
+import { accessoryName, accessorySlot, colorName, garmentKind, garmentSupportsGender, garmentSupportsOccasion, isCourtGarment, occasionOptions, regionOptions, styleOptions, toColorHex } from '@/lib/outfit';
+import { normalizeCulturalText } from '@/lib/cultural';
 
 function readList(value: string | null): string[] {
   if (value === null) return [];
@@ -116,17 +117,30 @@ function StudioContent() {
     setSaveMessage('');
   }
 
+  const replacement = !garmentSupportsGender(primaryGarment, gender)
+    ? catalog.items.find(item => item.category === 'GARMENT' && garmentKind(item.name) === 'ao-tac') : undefined;
+  const adjustedGarment = replacement?.name || primaryGarment;
+  const adjustOccasion = !occasion.trim() || !garmentSupportsOccasion(adjustedGarment, occasion);
+  const context = normalizeCulturalText(occasion);
+  const adjustColor = (['#FFFFFF', '#FDFBF7'].includes(selectedColor) && context.includes('cuoi'))
+    || (garmentKind(adjustedGarment) === 'nhat-binh' && selectedColor === '#D4AF37' && !/hoang gia|trien lam/.test(context));
+  const adjustedAccessories = accessories.map(name => {
+    const item = catalog.items.find(item => item.category === 'ACCESSORY' && [accessoryName(item, 'female'), accessoryName(item, 'male')].includes(name));
+    return item ? accessoryName(item, gender) : name;
+  }).filter(name => {
+    const text = normalizeCulturalText(name);
+    if (gender === 'male' && /mo qua|quai thao/.test(text)) return false;
+    if (garmentKind(adjustedGarment) === 'con-mien' && accessorySlot(name) === 'headwear') return false;
+    return !(text.includes('khan ran') && (['nhat-binh', 'ao-tac'].includes(garmentKind(adjustedGarment)) || isCourtGarment(adjustedGarment)));
+  }).filter((name, index, all) => !accessorySlot(name) || all.findIndex(other => accessorySlot(other) === accessorySlot(name)) === index);
+  const canAutoFix = !!replacement || adjustOccasion || adjustColor || JSON.stringify(adjustedAccessories) !== JSON.stringify(accessories);
+
   function autoFix() {
-    if (['nhat-binh', 'tu-than', 'thai-thanh-hoa'].includes(garmentKind(primaryGarment)) && gender === 'male') {
-      const replacement = catalog.items.find(item => item.category === 'GARMENT' && garmentKind(item.name) === 'ao-tac');
-      if (replacement) { setGarmentId(replacement.id); if (!hasCustomName) setOutfitName(`Phối đồ cùng ${replacement.name}`); }
-    }
-    setAccessories(previous => previous.map(name => {
-      const item = catalog.items.find(item => item.category === 'ACCESSORY' && [accessoryName(item, 'female'), accessoryName(item, 'male')].includes(name));
-      return item ? accessoryName(item, gender) : name;
-    }));
-    if (['#FFFFFF', '#FDFBF7', '#D4AF37'].includes(selectedColor)) chooseColor('#C0392B');
-    if (garmentKind(primaryGarment) === 'nhat-binh' && occasion.includes('hằng ngày')) setOccasion('Chụp ảnh di sản / nghệ thuật');
+    if (replacement) { setGarmentId(replacement.id); if (!hasCustomName) setOutfitName(`Phối đồ cùng ${replacement.name}`); }
+    setAccessories(adjustedAccessories);
+    if (adjustColor) chooseColor('#C0392B');
+    if (adjustOccasion) setOccasion('Chụp ảnh di sản / nghệ thuật');
+    setNotice('Đã điều chỉnh các xung đột có thể xử lý. Những điểm cần tư liệu vẫn được giữ trong phần đối chiếu.');
     setSaveMessage('');
   }
 
@@ -155,7 +169,7 @@ function StudioContent() {
     <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_minmax(0,.85fr)] gap-3 lg:grid-cols-[270px_minmax(0,1fr)_280px] lg:grid-rows-1 xl:grid-cols-[300px_minmax(0,1fr)_300px]">
       <aside className={`order-2 min-h-0 flex-col rounded-2xl border border-stone-200 bg-white p-3 lg:order-1 lg:flex ${mobilePanel === 'wardrobe' ? 'flex' : 'hidden'}`} aria-label="Tủ trang phục">
         <div className="flex shrink-0 items-center justify-between"><h2 className="font-serif text-lg font-semibold">Tủ trang phục</h2><Link href="/cultural" target="_blank" rel="noopener noreferrer" className="text-amber-800" aria-label="Mở bảo tàng trong tab mới"><ArrowUpRight size={16} /></Link></div>
-        <WardrobePicker {...catalog} onRetry={catalog.retry} selectedIds={selectedIds} onSelect={selectItem} fill />
+        <WardrobePicker {...catalog} onRetry={catalog.retry} selectedIds={selectedIds} onSelect={selectItem} gender={gender} selectedColor={selectedColor} fill />
       </aside>
       <section className="order-1 flex min-h-0 min-w-0 flex-col gap-2 lg:order-2" aria-label="Phòng mặc thử">
         <div className="shrink-0 space-y-1 px-1">
@@ -178,7 +192,7 @@ function StudioContent() {
           <h2 className="mb-2 flex shrink-0 items-center gap-2 text-xs font-semibold">{validating ? <Loader2 size={15} className="animate-spin" /> : validation?.status === 'COMPLIANT' ? <CheckCircle size={15} /> : <AlertTriangle size={15} />}{statusText}</h2>
           <div className="min-h-0 overflow-y-auto overscroll-contain text-[11px] leading-relaxed">
             {validationError && <><p>{validationError}</p><button onClick={() => setCheckAttempt(value => value + 1)} className="mt-2 underline">Kiểm tra lại</button></>}
-            {validation && <><div className="space-y-2">{validation.issues.map(issue => <p key={issue}>{issue}</p>)}</div>{validation.issues.length > 0 && <button onClick={autoFix} className="my-2 rounded-lg border border-current/20 bg-white/70 px-3 py-2 text-[10px] font-semibold">Điều chỉnh phối đồ</button>}<p className="mt-1 text-[10px] opacity-70">Đối chiếu các quy tắc hiện có, không phải chứng nhận phục dựng.</p><details className="mt-2"><summary className="cursor-pointer text-[10px] underline underline-offset-2">Ghi chú & nguồn tham khảo</summary><div className="mt-2 space-y-2">{validation.notes.map(note => <p key={note}>{note}</p>)}{validation.sources.map((source, index) => <a key={index} href={source.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 underline">{source.title}<ExternalLink size={12} /></a>)}</div></details></>}
+            {validation && <><div className="space-y-2">{validation.issues.map(issue => <p key={issue}>{issue}</p>)}</div>{validation.issues.length > 0 && canAutoFix && <button onClick={autoFix} className="my-2 rounded-lg border border-current/20 bg-white/70 px-3 py-2 text-[10px] font-semibold">Điều chỉnh phối đồ</button>}<p className="mt-1 text-[10px] opacity-70">Đối chiếu các quy tắc hiện có, không phải chứng nhận phục dựng.</p><details className="mt-2"><summary className="cursor-pointer text-[10px] underline underline-offset-2">Ghi chú & nguồn tham khảo</summary><div className="mt-2 space-y-2">{validation.notes.map(note => <p key={note}>{note}</p>)}{validation.sources.map((source, index) => <a key={index} href={source.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 underline">{source.title}<ExternalLink size={12} /></a>)}</div></details></>}
           </div>
         </section>
       </aside>

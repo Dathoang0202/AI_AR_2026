@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ZoomIn, ZoomOut } from 'lucide-react';
 import { MannequinFigure } from '@/components/mannequin/MannequinFigure';
+import { hasAccessoryPreview } from '@/lib/outfit';
 
 interface Props {
   garment: string;
@@ -16,6 +17,7 @@ interface Props {
 
 export function VirtualMannequin({ garment, colorName, colorHex, accessories, gender, onGenderChange }: Props) {
   const [zoomed, setZoomed] = useState(false);
+  const pendingAccessories = accessories.filter(name => !hasAccessoryPreview(name));
 
   return <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-[#ded7cb] bg-[#f4f0e8]" data-mannequin>
     <div className="z-10 flex shrink-0 items-center justify-between gap-2 border-b border-[#ded7cb]/70 bg-[#faf8f3] px-3 py-2">
@@ -34,6 +36,7 @@ export function VirtualMannequin({ garment, colorName, colorHex, accessories, ge
         <MannequinFigure garment={garment} colorName={colorName} colorHex={colorHex} accessories={accessories} gender={gender} />
       </div>
     </div>
+    {pendingAccessories.length > 0 && <p role="status" className="max-h-20 shrink-0 overflow-y-auto border-t border-[#ded7cb]/70 bg-[#faf8f3] px-4 py-2 text-[10px] leading-relaxed text-stone-600" data-pending-accessory-preview>Phụ kiện đã chọn, chưa có mô phỏng: {pendingAccessories.join(', ')}.</p>}
     <div className="hidden shrink-0 items-center justify-between gap-2 border-t border-[#ded7cb]/70 bg-[#faf8f3] px-4 py-2.5 text-[10px] text-stone-400 lg:flex"><span className="flex min-w-0 items-center gap-1.5"><span className="h-2 w-2 shrink-0 rounded-full border border-black/10" style={{ backgroundColor: colorHex }} /><span className="truncate text-stone-600">{colorName}</span></span><span className="text-right">Mô phỏng phom dáng & màu sắc</span></div>
   </div>;
 }

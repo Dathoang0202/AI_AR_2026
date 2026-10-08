@@ -1,4 +1,5 @@
 import { normalizeCulturalText } from './cultural';
+import { workbookVisual } from './workbookCatalog';
 import type { CulturalItemResponse } from '@/services/culturalApi';
 
 export const outfitColors = [
@@ -33,6 +34,8 @@ export function colorName(hex: string) {
 
 export function garmentKind(name: string) {
   const text = normalizeCulturalText(name);
+  const visual = workbookVisual(text);
+  if (visual?.category === 'GARMENT') return visual.kind;
   if (text.includes('nhat binh')) return 'nhat-binh';
   if (text.includes('giao linh')) return 'giao-linh';
   if (text.includes('tu than')) return 'tu-than';
@@ -52,10 +55,39 @@ export function accessoryName(item: CulturalItemResponse, gender: 'female' | 'ma
 
 export function accessorySlot(name: string) {
   const text = normalizeCulturalText(name);
+  const visual = workbookVisual(text);
+  if (visual?.category === 'ACCESSORY') return visual.slot;
+  if (text.includes('vong co')) return 'necklace';
   if (text.includes('non la') || text.includes('khan dong') || /\bman\b/.test(text)) return 'headwear';
   if (text.includes('khan ran')) return 'scarf';
   if (text.includes('quat')) return 'fan';
   return undefined;
+}
+
+export function garmentSupportsGender(name: string, gender: 'female' | 'male') {
+  const text = normalizeCulturalText(name);
+  const female = ['nhat-binh', 'tu-than', 'thai-thanh-hoa', 'ao-yem', 'phuong-bao'].includes(garmentKind(name)) || /\bnu\b/.test(text);
+  const male = ['con-mien', 'hoang-bao', 'bien-phuc'].includes(garmentKind(name)) || /\bnam\b/.test(text);
+  return gender === 'male' ? !female : !male;
+}
+
+export function isCourtGarment(name: string) {
+  return ['vien-linh', 'bo-tu', 'con-mien', 'hoang-bao', 'phuong-bao', 'bien-phuc', 'mang-bao'].includes(garmentKind(name));
+}
+
+export function garmentSupportsOccasion(name: string, occasion: string) {
+  const context = normalizeCulturalText(occasion);
+  if ((garmentKind(name) === 'nhat-binh' || isCourtGarment(name)) && /hang ngay|the thao/.test(context)) return false;
+  return !isCourtGarment(name) || !context.includes('dao pho');
+}
+
+export function hasAccessoryPreview(name: string) {
+  const text = normalizeCulturalText(name);
+  return accessorySlot(name) !== undefined || text.includes('vong co') || text.includes('kieng');
+}
+
+export function hasStudioPreview(item: CulturalItemResponse) {
+  return item.category === 'GARMENT' ? garmentKind(item.name) !== 'other' : hasAccessoryPreview(item.name);
 }
 
 export function museumStudioHref(item: CulturalItemResponse) {

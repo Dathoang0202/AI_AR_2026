@@ -12,6 +12,8 @@ export interface CulturalItemResponse {
   id: number;
   name: string;
   category: string;
+  itemType?: string;
+  usageCategory?: string;
   region?: string;
   historicalPeriod?: string;
   description: string;

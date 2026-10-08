@@ -107,7 +107,8 @@ class CulturalMigrationTest {
     }
 
     private static Flyway flyway(String url) {
-        return Flyway.configure().dataSource(url, "sa", "").load();
+        // Keep these regression checks scoped to the V5-V7 museum expansion.
+        return Flyway.configure().dataSource(url, "sa", "").target("7").load();
     }
 
     private static int count(Connection connection, String sql) throws SQLException {

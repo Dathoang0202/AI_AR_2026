@@ -63,6 +63,28 @@ public class CulturalValidationService {
             notes.add("Ngũ thân tay chẽn có ống tay hẹp, khác áo Tấc tay thụng. Chọn biến thể nam hoặc nữ và phụ kiện theo bối cảnh phục dựng.");
             sources.add(new CulturalSourceDto("Đưa áo dài ngũ thân sống lại bản sắc vốn có", "Báo Tin tức — TTXVN",
                     "https://baotintuc.vn/van-hoa/ton-vinh-gia-tri-van-hoa-truyen-thong-bai-cuoi-dua-ao-dai-ngu-than-song-lai-ban-sac-von-co-20210213074311146.htm"));
+        } else if (GarmentRules.isWorkbookGarment(garment)) {
+            if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+            if (GarmentRules.needsSpecificReference(garment)) {
+                issues.add("Tên gọi và phom trong danh mục này được nhập từ tài liệu cung cấp; chưa có đủ tư liệu riêng để xác nhận biến thể lịch sử. Hình mặc thử là mô phỏng theo mô tả.");
+            } else if (GarmentRules.isCourtGarment(garment)) {
+                issues.add("Y phục cung đình cần đối chiếu triều đại, vai trò người mặc, phẩm cấp, màu và hoa văn. Mô phỏng hiện tại chưa đủ để xác nhận một bộ phục dựng.");
+                sources.add(new CulturalSourceDto("Long Phụng Trình Tường", "Bảo tàng Lịch sử Quốc gia",
+                        "https://baotanglichsu.vn/vi/Articles/3101/18620/long-phung-trinh-tuong.html"));
+            } else if (garment.contains("tran thu")) {
+                issues.add("Áo Trấn Thủ trong mục này là mẫu áo chần bông gắn với năm 1946. Không dùng mẫu này để xác nhận phục dựng quân phục Lê – Nguyễn.");
+                sources.add(new CulturalSourceDto("Chữ và nghĩa: Áo trấn thủ", "Báo Quân đội nhân dân",
+                        "https://ct.qdnd.vn/clb-chien-si/chu-va-nghia-ao-tran-thu-527498"));
+            } else if (garment.contains("ao yem")) {
+                issues.add("Yếm là lớp nội y truyền thống; mô phỏng đang phối cùng váy. Khi phục dựng một dịp sử dụng cụ thể, cần đối chiếu lớp áo ngoài và cách mặc.");
+            } else {
+                issues.add("Đã nhận diện phom y phục; cách phối phụ kiện và bối cảnh vẫn cần đối chiếu thêm theo vùng miền, niên đại.");
+            }
+            if (!GarmentRules.supportsOccasion(garment, occasion)) {
+                status = "NON_COMPLIANT";
+                issues.add("Y phục lễ phục này không thuộc gợi ý phục dựng cho sinh hoạt hằng ngày, thể thao hoặc dạo phố. Hãy chọn bối cảnh chụp ảnh di sản hoặc một y phục sinh hoạt.");
+            }
+            notes.add("Đổi kích thước theo ma-nơ-canh và đổi màu chỉ phục vụ hình mặc thử; không xác nhận tính chính xác lịch sử.");
         } else if (GarmentRules.isKnown(garment)) {
             notes.add("Cần chọn đúng biến thể, niên đại và phụ kiện của y phục khi phục dựng một nghi lễ cụ thể.");
         } else {
@@ -75,21 +97,37 @@ public class CulturalValidationService {
             if (male && name.matches(".*\\bman\\b.*")) {
                 status = "NON_COMPLIANT";
                 issues.add("Mấn trong bộ sưu tập này được phối cho ma-nơ-canh nữ. Có thể chọn khăn đóng khi phối cho ma-nơ-canh nam.");
+            } else if (male && (name.contains("mo qua") || name.contains("quai thao"))) {
+                status = "NON_COMPLIANT";
+                issues.add("Biến thể " + accessory + " trong danh mục được mô tả cùng trang phục phụ nữ miền Bắc. Cần đổi phụ kiện hoặc đối chiếu tư liệu cho biến thể nam.");
+            } else if (GarmentRules.isCourtAccessory(name)) {
+                if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+                issues.add("Phụ kiện " + accessory + " gắn với nghi lễ hoặc phẩm cấp; chưa thể xác nhận cách phối chỉ từ hình mô phỏng.");
             } else if (!name.contains("khan dong") && !name.matches(".*\\bman\\b.*")
                     && !name.contains("non la") && !name.contains("vong co") && !name.contains("quat") && !name.contains("khan ran")) {
                 if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
                 issues.add("Phụ kiện " + accessory + " chưa có đủ quy tắc đối chiếu văn hóa.");
             }
-            if (name.contains("khan ran") && (garment.contains("nhat binh") || garment.contains("ao tac"))) {
+            if (name.contains("khan ran") && (garment.contains("nhat binh") || garment.contains("ao tac") || GarmentRules.isCourtGarment(garment))) {
                 if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
                 issues.add("Khăn rằn với y phục lễ phục này là gợi ý phối sáng tạo; chưa có tư liệu để xác nhận cách phối phục dựng lịch sử.");
             }
         }
         long headwearCount = accessories.stream().map(GarmentRules::normalized)
-                .filter(name -> name.contains("non la") || name.contains("khan dong") || name.matches(".*\\bman\\b.*")).count();
+                .filter(GarmentRules::isHeadwear).count();
         if (headwearCount > 1) {
             if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
             issues.add("Đang chọn nhiều phụ kiện đội đầu. Chọn một món để hình mô phỏng khớp với bộ phối lưu lại.");
+        }
+        if (garment.contains("con mien") && headwearCount > 0) {
+            if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+            issues.add("Phụ kiện đội đầu đang thay mũ miện tích hợp của bộ Côn Miện trong hình mặc thử. Bộ phối này chưa thể coi là bộ Côn Miện hoàn chỉnh.");
+        }
+        long footwearCount = accessories.stream().map(GarmentRules::normalized)
+                .filter(name -> name.contains("guoc moc") || name.contains("hai cung dinh")).count();
+        if (footwearCount > 1) {
+            if (!status.equals("NON_COMPLIANT")) status = "CAUTION";
+            issues.add("Đang chọn nhiều loại giày dép. Chọn một đôi để hình mặc thử khớp với bộ phối.");
         }
         if ((color.contains("trang") || color.contains("#ffffff") || color.contains("#fdfbf7")) && occasion.contains("cuoi")) {
             if (!status.equals("NON_COMPLIANT")) status = "CAUTION";

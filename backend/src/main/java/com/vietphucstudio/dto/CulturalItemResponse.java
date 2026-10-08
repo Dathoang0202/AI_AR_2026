@@ -7,6 +7,8 @@ public class CulturalItemResponse {
     private Long id;
     private String name;
     private String category;
+    private String itemType;
+    private String usageCategory;
     private String region;
     private String historicalPeriod;
     private String description;
@@ -24,6 +26,12 @@ public class CulturalItemResponse {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getItemType() { return itemType; }
+    public void setItemType(String itemType) { this.itemType = itemType; }
+
+    public String getUsageCategory() { return usageCategory; }
+    public void setUsageCategory(String usageCategory) { this.usageCategory = usageCategory; }
 
     public String getRegion() { return region; }
     public void setRegion(String region) { this.region = region; }

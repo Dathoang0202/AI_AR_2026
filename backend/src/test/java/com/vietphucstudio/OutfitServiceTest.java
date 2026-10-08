@@ -192,6 +192,33 @@ class OutfitServiceTest {
         assertTrue(outfitService.generateRecommendations(new OutfitPreferenceRequest()).get(0).getAccessories().isEmpty());
     }
 
+    @Test
+    void workbookRecommendationsRespectGenderOccasionAndUseNewMuseumAccessories() {
+        when(culturalItemRepository.findByCategory("GARMENT")).thenReturn(List.of(
+                garment(101L, "Hoàng Bào"), garment(102L, "Phượng Bào"), garment(103L, "Áo Côn Miện"),
+                garment(104L, "Áo Mãng Bào"), garment(105L, "Áo Vạt Hò"), garment(106L, "Áo Cổ Mãn"),
+                garment(107L, "Áo Biền Phục"), garment(108L, "Áo Thụ Khâm"), garment(109L, "Áo Chẽn Ngự Lâm")));
+        when(culturalItemRepository.findByCategory("ACCESSORY")).thenReturn(List.of(
+                garment(201L, "Đai Ngọc"), garment(202L, "Hài Cung Đình"), garment(203L, "Mũ Cánh Chuồn"),
+                garment(204L, "Khăn Rằn Nam Bộ"), garment(205L, "Nón Lá")));
+        var request = new OutfitPreferenceRequest();
+        request.setGender("male"); request.setStyle("Cổ điển Hoàng gia"); request.setOccasion("Chụp ảnh di sản / nghệ thuật");
+        var royal = outfitService.generateRecommendations(request);
+        assertEquals(List.of(101L, 103L, 104L), royal.stream().map(OutfitRecommendationResponse::getCulturalItemId).toList());
+        assertEquals(List.of("Đai Ngọc", "Hài Cung Đình"), royal.get(0).getAccessories());
+        assertEquals(List.of("Hài Cung Đình"), royal.get(1).getAccessories());
+        assertTrue(royal.get(0).getMatchReasons().stream().anyMatch(reason -> reason.contains("đối chiếu")));
+        request.setGender("female");
+        assertEquals(102L, outfitService.generateRecommendations(request).get(0).getCulturalItemId());
+        request.setGender("male"); request.setOccasion("Sinh hoạt hằng ngày");
+        var daily = outfitService.generateRecommendations(request);
+        assertEquals(List.of(105L), daily.stream().map(OutfitRecommendationResponse::getCulturalItemId).toList());
+        assertEquals(List.of("Khăn Rằn Nam Bộ", "Nón Lá"), daily.get(0).getAccessories());
+        request.setOccasion("Chụp ảnh di sản / nghệ thuật"); request.setCulturalItemId(106L);
+        assertEquals(106L, outfitService.generateRecommendations(request).get(0).getCulturalItemId());
+        assertTrue(outfitService.generateRecommendations(request).get(0).getAccessories().isEmpty());
+    }
+
     private CulturalItem garment(Long id, String name) {
         CulturalItem item = new CulturalItem();
         item.setId(id); item.setName(name); item.setCategory("GARMENT");

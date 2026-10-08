@@ -1,6 +1,5 @@
 package com.vietphucstudio.dto;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class RentalProviderResponse {
@@ -13,7 +12,6 @@ public class RentalProviderResponse {
     private Double longitude;
     private String phone;
     private String website;
-    private Boolean isDemoData;
     private List<RentalItemResponse> items;
 
     public RentalProviderResponse() {}
@@ -41,9 +39,6 @@ public class RentalProviderResponse {
 
     public String getWebsite() { return website; }
     public void setWebsite(String website) { this.website = website; }
-
-    public Boolean getIsDemoData() { return isDemoData; }
-    public void setIsDemoData(Boolean isDemoData) { this.isDemoData = isDemoData; }
 
     public List<RentalItemResponse> getItems() { return items; }
     public void setItems(List<RentalItemResponse> items) { this.items = items; }

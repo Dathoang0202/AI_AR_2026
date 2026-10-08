@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Check, Info, Loader2, MapPin, Navigation, Palette, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowUpRight, Check, Loader2, MapPin, Navigation, Palette, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
 import { getRentalProviders, RentalProviderResponse } from '@/services/rentalApi';
 import { normalizeCulturalText } from '@/lib/cultural';
 import { rentalDistance, RentalPosition, startingPrice } from '@/lib/rentals';
@@ -88,7 +88,6 @@ export default function RentalsPage() {
       <section className="rentals-results" aria-labelledby="rentals-results-title">
         <div className="rentals-results-toolbar"><div><p className="rentals-eyebrow">DANH SÁCH ĐỊA ĐIỂM</p><h2 id="rentals-results-title" aria-live="polite">{loading ? 'Đang tải địa điểm…' : error ? 'Chưa tải được danh sách' : `${visible.length} địa điểm`}{ready && hasFilters && <span> / {providers.length} trong danh sách</span>}</h2></div><label className="rentals-sort">Sắp xếp<select aria-label="Sắp xếp địa điểm" value={sort} onChange={event => setSort(event.target.value)}><option value="default">Mặc định</option><option value="price">Giá khởi điểm tăng dần</option><option value="name">Tên cửa hàng A–Z</option><option value="distance" disabled={!position}>Gần vị trí của tôi</option></select></label></div>
         {hasFilters && <div className="rentals-active-filters" aria-label="Bộ lọc đang áp dụng">{city !== 'ALL' && <button onClick={() => setCity('ALL')} aria-label="Bỏ lọc khu vực">{city}<X size={12} /></button>}{query.trim() && <button onClick={() => setQuery('')} aria-label="Bỏ lọc từ khóa">“{query.trim()}”<X size={12} /></button>}</div>}
-        {ready && providers.some(provider => provider.isDemoData) && <div className="rentals-demo-note"><Info size={16} /><p>Các địa điểm có nhãn <strong>Demo data</strong> là dữ liệu mẫu để trải nghiệm tính năng, bao gồm thông tin liên hệ và giá thuê.</p></div>}
         {loading ? <div className="rentals-loading" role="status" aria-label="Đang tải địa điểm thuê">{[0, 1, 2].map(value => <div key={value} className="rental-skeleton"><span /><i /><i /></div>)}</div>
           : error ? <div className="rentals-state" role="alert"><MapPin size={32} strokeWidth={1.2} /><h3>Chưa kết nối được với danh sách</h3><p>{error}</p><button onClick={() => setAttempt(value => value + 1)} className="rental-button rental-button-primary"><RotateCcw size={15} />Tải lại địa điểm</button></div>
           : visible.length ? <><div className="rentals-list">{visible.map(({ provider, distance }, index) => <RentalProviderCard key={provider.id} provider={provider} distance={distance} index={index} />)}</div><p className="rentals-list-end">Đang hiển thị {visible.length} / {providers.length} địa điểm{hasFilters ? ' theo bộ lọc của bạn' : ' trong danh sách'}.</p></>

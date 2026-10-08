@@ -35,6 +35,44 @@ the photographed examples; contemporary products are not presented as antiques.
 | `quat-xep.jpg` | [Folding fans from Chàng Sơn](https://quatchangson.vn/vi/post/dua-quat-chang-son-vuon-xa-2.htm) | Quạt Chàng Sơn, publishing source; photographer not specified for this photograph | No open license stated by source | 1000 × 681 |
 | `khan-ran.jpg` | [Tân Châu checked scarf product](https://nongsanangiang.com/khan-ran-tan-chau-an-giang) | Nông Sản An Giang | Product photograph; no open license stated by source | 768 × 1024 |
 
+The following color photograph was added on 2026-10-08. The Commons file page
+identifies Léon Busy as photographer and describes the people as wearing a white
+brassiere, black pants, a light-colored belt, and conical hats in 1910s Hanoi.
+The Commons file is public domain in Vietnam. It is used as a period clothing
+reference, not as a dated museum accession.
+
+| Local file | Description and source | Photographer / source credit | License | Stored size |
+| --- | --- | --- | --- | --- |
+| `ao-yem-color.jpg` | [Color photo of Hanoi women wearing a white brassiere and black pants, 1910s](https://commons.wikimedia.org/wiki/File:Two_girls_sitting_near_the_tank_wore_the_traditional_costume_-_white_brassiere,_black_pants,_light-colored_belt_and_conical_hat_-_L%C3%A9on_Busy_(1874-1951).jpg) | Léon Busy / Musée départemental Albert-Kahn | Public domain in Vietnam | 640 × 467 |
+
+Two further Commons photographs are linked directly rather than copied into this
+directory. The robe photograph is a close-up of embroidery, not a full-garment
+view; it is used only as a detail reference. The hat is an actual Nguyễn-dynasty
+museum object with long side wings.
+
+| Description and source | Photographer / source credit | License |
+| --- | --- | --- |
+| [Close-up of Emperor Bảo Đại's imperial robe](https://commons.wikimedia.org/wiki/File:Bao_Dai_imperial_robe_private_collection_EDAV.jpg) | Marie-Lan Nguyen / Wikimedia Commons | Public domain |
+| [Gilded-metal Nguyễn official hat, 19th–early 20th century](https://commons.wikimedia.org/wiki/File:Official_hat,_Nguyen_dynasty,_19th_to_early_20th_century,_gilded_metal_-_National_Museum_of_Vietnamese_History_-_Hanoi,_Vietnam_-_DSC05595.JPG) | Daderot / Wikimedia Commons | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
+
+Additional photographs used by the workbook catalog are listed below. Each was
+visually checked to show the object without a human face. Captions distinguish
+detail photographs and modern products from complete historic ensembles. The
+source pages do not state an open license for these photographs.
+
+| Local file | Subject and source | Credit |
+| --- | --- | --- |
+| `bo-tu-photo.jpg` | [A rank badge on Nguyễn official dress](https://baotanglichsu.vn/VI/Articles/3096/18573/bo-tu-tren-pham-phuc-quan-trieu-nguyen.html), image 1; detail of decoration, not a full robe | Vietnam National Museum of History; article by Đinh Quỳnh Hoa |
+| `con-mien-photo.jpg` | [Long cổn ceremonial robe](https://baotanglichsu.vn/vi/Articles/3101/18620/long-phung-trinh-tuong.html), image 6; does not show the crown or full ensemble | Vietnam National Museum of History; article by Trần Đức Anh Sơn |
+| `mang-bao-photo.jpg` | [Prince's mãng bào](https://baotanglichsu.vn/vi/Articles/3101/18620/long-phung-trinh-tuong.html), image 8 | Vietnam National Museum of History; article by Trần Đức Anh Sơn |
+| `tran-thu-photo.jpg` | [Quilted vest given to Nguyễn Đức Lô after the 1950 Border Campaign](https://www.qdnd.vn/tu-lieu-ho-so/van-kien-tu-lieu/hien-vat-chien-thang-ao-tran-thu-bac-ho-tang-nguoi-dau-tien-su-dung-sung-bazooka-780585) | Đoàn Thảo / Quân đội nhân dân |
+| `quai-thao-photo.jpg` | [Quai thao hat with a fabric strap on a display stand](https://trangphucdienanhsang.com/san-pham/non-quai-thao-01/); modern performance product | Trang Phục Biểu Diễn Ánh Sáng |
+| `hai-photo.jpg` | [Empress Nam Phương's phoenix-decorated shoes](https://baotanglichsu.vn/vi/Articles/3101/18781/hai-chau-got-ngoc.html), image 11 | Vietnam National Museum of History; article by Trần Đức Anh Sơn |
+| `dai-ngoc-photo.jpg` | [Jade belt plaques with gold and gems](https://baotanglichsu.vn/vi/Articles/3091/18045/tinh-xao-trang-suc-co-viet-nam.html), image 3; parts of a belt | Đại Dương / Dân Trí, republished by the museum |
+| `kieng-photo.jpg` | [Silver neck ring, nineteenth–twentieth century](https://baotanglichsu.vn/vi/Articles/3091/18045/tinh-xao-trang-suc-co-viet-nam.html), image 2 | Đại Dương / Dân Trí, republished by the museum |
+| `tram-photo.jpg` | [Floral hairpins, eighteenth century](https://baotanglichsu.vn/vi/Articles/3091/18045/tinh-xao-trang-suc-co-viet-nam.html), image 7 | Đại Dương / Dân Trí, republished by the museum |
+| `kim-khanh-photo.jpg` | [Gold Ân tứ kim khánh with pearls](https://baotanglichsu.vn/vi/Articles/3101/19023/kim-bai-kim-khanh-ngoc-khanh-thoi-nguyen.html), image 4 | Vietnam National Museum of History; article by Trần Đức Anh Sơn |
+
 Studio and Lookbook use code-native, simplified garment shapes and accessories.
 The Thai example is kept specific to Thanh Hóa, with a cultural review notice;
 its simplified textile bands do not reproduce or authenticate particular motifs.

@@ -31,9 +31,6 @@ public class RentalProvider {
     @Column(length = 255)
     private String website;
 
-    @Column(name = "is_demo_data")
-    private Boolean isDemoData = true;
-
     @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<RentalItem> items = new ArrayList<>();
 
@@ -70,9 +67,6 @@ public class RentalProvider {
 
     public String getWebsite() { return website; }
     public void setWebsite(String website) { this.website = website; }
-
-    public Boolean getIsDemoData() { return isDemoData; }
-    public void setIsDemoData(Boolean isDemoData) { this.isDemoData = isDemoData; }
 
     public List<RentalItem> getItems() { return items; }
     public void setItems(List<RentalItem> items) { this.items = items; }

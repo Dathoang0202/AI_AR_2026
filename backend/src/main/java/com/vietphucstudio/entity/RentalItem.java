@@ -21,8 +21,11 @@ public class RentalItem {
     @Column(nullable = false, length = 50)
     private String category;
 
-    @Column(name = "price_per_day", nullable = false, precision = 10, scale = 2)
+    @Column(name = "price_per_day", precision = 10, scale = 2)
     private BigDecimal pricePerDay;
+
+    @Column(name = "price_display", length = 100)
+    private String priceDisplay;
 
     @Column(name = "availability_status", length = 20)
     private String availabilityStatus = "AVAILABLE";
@@ -43,6 +46,9 @@ public class RentalItem {
 
     public BigDecimal getPricePerDay() { return pricePerDay; }
     public void setPricePerDay(BigDecimal pricePerDay) { this.pricePerDay = pricePerDay; }
+
+    public String getPriceDisplay() { return priceDisplay; }
+    public void setPriceDisplay(String priceDisplay) { this.priceDisplay = priceDisplay; }
 
     public String getAvailabilityStatus() { return availabilityStatus; }
     public void setAvailabilityStatus(String availabilityStatus) { this.availabilityStatus = availabilityStatus; }

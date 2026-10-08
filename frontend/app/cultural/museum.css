@@ -102,7 +102,6 @@
 .museum-detail-hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 32px; align-items: start; }
 .museum-detail-image { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; max-height: 700px; overflow: hidden; border: 1px solid var(--museum-line); border-radius: 5px; background: #e9e0d3; cursor: zoom-in; }
 .museum-detail-image > img { width: 100%; height: 100%; object-fit: contain; }
-.museum-detail-image > .museum-illustration-image { object-fit: cover; }
 .museum-detail-image-label { position: absolute; left: 15px; top: 15px; display: inline-flex; align-items: center; gap: 8px; background: #fffaf0ed; color: var(--museum-red); padding: 9px 12px; font-size: 9px; letter-spacing: .08em; }
 .museum-zoom-icon { position: absolute; right: 15px; top: 15px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 4px; background: #fffaf0ed; color: var(--museum-red); }
 .museum-image-caption { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; font-size: 9px; color: var(--museum-muted); }

@@ -95,4 +95,50 @@ class CulturalValidationServiceTest {
         request.setGender("female");
         assertEquals("CAUTION", service.validateOutfit(request).getStatus());
     }
+
+    @Test
+    void workbookGarmentsAreRecognizedButNotCertifiedByTheirDrawing() {
+        for (String garment : List.of("Áo Viên Lĩnh", "Áo Đối Khâm", "Áo Cổ Mãn", "Áo Bổ Tử", "Áo Côn Miện",
+                "Hoàng Bào", "Áo Trấn Thủ", "Áo Biền Phục", "Áo Mãng Bào", "Áo Vạt Hò", "Áo Chẽn Ngự Lâm", "Áo Thụ Khâm")) {
+            var result = service.validateOutfit(request(garment, "male"));
+            assertEquals("CAUTION", result.getStatus(), garment);
+            assertFalse(result.getIssues().isEmpty(), garment);
+            assertTrue(result.getNotes().stream().anyMatch(note -> note.contains("mặc thử")), garment);
+        }
+        for (String garment : List.of("Áo Yếm", "Phượng Bào")) {
+            assertEquals("CAUTION", service.validateOutfit(request(garment, "female")).getStatus());
+            assertEquals("NON_COMPLIANT", service.validateOutfit(request(garment, "male")).getStatus());
+        }
+        for (String garment : List.of("Áo Côn Miện", "Hoàng Bào", "Áo Biền Phục"))
+            assertEquals("NON_COMPLIANT", service.validateOutfit(request(garment, "female")).getStatus());
+    }
+
+    @Test
+    void courtOccasionsAndConflictingNewAccessoriesRemainVisible() {
+        var request = request("Hoàng Bào", "male");
+        request.setOccasion("Sinh hoạt hằng ngày");
+        request.setAccessories(List.of("Đai Ngọc", "Nón Lá", "Mũ Cánh Chuồn"));
+        assertEquals("NON_COMPLIANT", service.validateOutfit(request).getStatus());
+        request.setGarment("Áo Côn Miện"); request.setOccasion("Chụp ảnh di sản / nghệ thuật");
+        request.setAccessories(List.of("Nón Lá", "Guốc Mộc", "Hài Cung Đình"));
+        var result = service.validateOutfit(request);
+        assertEquals("CAUTION", result.getStatus());
+        assertTrue(result.getIssues().stream().anyMatch(issue -> issue.contains("mũ miện tích hợp")));
+        assertTrue(result.getIssues().stream().anyMatch(issue -> issue.contains("nhiều loại giày")));
+        request.setGarment("Áo Tấc");
+        for (String accessory : List.of("Nón Quai Thao", "Khăn Mỏ Quạ")) {
+            request.setAccessories(List.of(accessory));
+            assertEquals("NON_COMPLIANT", service.validateOutfit(request).getStatus());
+        }
+    }
+
+    @Test
+    void tranThuHasTwentiethCenturyReferenceAndAmbiguousNamesNeedTheirOwnSources() {
+        var vest = service.validateOutfit(request("Áo Trấn Thủ", "male"));
+        assertTrue(vest.getIssues().stream().anyMatch(issue -> issue.contains("1946")));
+        assertTrue(vest.getSources().stream().anyMatch(source -> source.getUrl().contains("qdnd.vn")));
+        for (String garment : List.of("Áo Cổ Mãn", "Áo Biền Phục", "Áo Chẽn Ngự Lâm", "Áo Thụ Khâm"))
+            assertTrue(service.validateOutfit(request(garment, "male")).getIssues().stream()
+                    .anyMatch(issue -> issue.contains("chưa có đủ tư liệu riêng")), garment);
+    }
 }

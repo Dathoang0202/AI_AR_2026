@@ -11,21 +11,114 @@ export function categoryLabel(category: string) {
 export function filterCulturalItems(items: CulturalItemResponse[], query: string, category: string, period: string) {
   const terms = normalizeCulturalText(query.trim()).split(/\s+/).filter(Boolean);
   return items.filter(item => {
-    const text = normalizeCulturalText([item.name, item.description, item.historicalPeriod, item.region, item.significance].filter(Boolean).join(' '));
+    const text = normalizeCulturalText([item.name, item.itemType, item.usageCategory, item.description, item.historicalPeriod, item.region, item.significance].filter(Boolean).join(' '));
     return (category === 'ALL' || item.category === category)
       && (period === 'ALL' || item.historicalPeriod === period)
       && terms.every(term => text.includes(term));
   });
 }
 
-export function getIllustration(name: string, variant: 'card' | 'detail' = 'card') {
+export function getMuseumImage(name: string, variant: 'card' | 'detail' = 'card') {
   const normalized = normalizeCulturalText(name);
   if (normalized.includes('nhat binh')) return variant === 'detail' ? '/images/museum/nhat-binh-detail.jpg' : '/images/museum/nhat-binh.jpg';
   if (normalized.includes('giao linh')) return '/images/museum/giao-linh.jpg';
   return getMuseumPhoto(name)?.src;
 }
 
-const museumPhotos = [
+interface MuseumPhoto {
+  keywords: string[];
+  src: string;
+  title: string;
+  author: string;
+  sourceUrl: string;
+  license?: string;
+  licenseUrl?: string;
+  contain?: boolean;
+}
+
+const museumPhotos: MuseumPhoto[] = [
+  {
+    keywords: ['bo tu'], src: '/images/museum/bo-tu-photo.jpg', contain: true,
+    title: 'Chi tiết bổ tử trên phẩm phục triều Nguyễn — ảnh trang trí trên áo, không phải toàn bộ áo',
+    author: 'Bảo tàng Lịch sử Quốc gia · bài Đinh Quỳnh Hoa',
+    sourceUrl: 'https://baotanglichsu.vn/VI/Articles/3096/18573/bo-tu-tren-pham-phuc-quan-trieu-nguyen.html',
+  },
+  {
+    keywords: ['con mien'], src: '/images/museum/con-mien-photo.jpg', contain: true,
+    title: 'Long cổn tế giao — phần áo tham khảo cho Côn Miện, ảnh không gồm mũ và toàn bộ bộ lễ phục',
+    author: 'Bảo tàng Lịch sử Quốc gia · bài TS Trần Đức Anh Sơn',
+    sourceUrl: 'https://baotanglichsu.vn/vi/Articles/3101/18620/long-phung-trinh-tuong.html',
+  },
+  {
+    keywords: ['mang bao'], src: '/images/museum/mang-bao-photo.jpg', contain: true,
+    title: 'Mãng bào của hoàng tử triều Nguyễn',
+    author: 'Bảo tàng Lịch sử Quốc gia · bài TS Trần Đức Anh Sơn',
+    sourceUrl: 'https://baotanglichsu.vn/vi/Articles/3101/18620/long-phung-trinh-tuong.html',
+  },
+  {
+    keywords: ['tran thu'], src: '/images/museum/tran-thu-photo.jpg', contain: true,
+    title: 'Áo trấn thủ Bác Hồ tặng đồng chí Nguyễn Đức Lô sau Chiến dịch Biên giới năm 1950',
+    author: 'Đoàn Thảo · Báo Quân đội nhân dân',
+    sourceUrl: 'https://www.qdnd.vn/tu-lieu-ho-so/van-kien-tu-lieu/hien-vat-chien-thang-ao-tran-thu-bac-ho-tang-nguoi-dau-tien-su-dung-sung-bazooka-780585',
+  },
+  {
+    keywords: ['quai thao'], src: '/images/museum/quai-thao-photo.jpg', contain: true,
+    title: 'Nón quai thao kèm dây đeo trên giá trưng bày — sản phẩm biểu diễn hiện đại',
+    author: 'Trang Phục Biểu Diễn Ánh Sáng',
+    sourceUrl: 'https://trangphucdienanhsang.com/san-pham/non-quai-thao-01/',
+  },
+  {
+    keywords: ['hai cung dinh'], src: '/images/museum/hai-photo.jpg', contain: true,
+    title: 'Đôi hài của hoàng hậu Nam Phương trang trí hình chim phượng',
+    author: 'Bảo tàng Lịch sử Quốc gia · bài TS Trần Đức Anh Sơn',
+    sourceUrl: 'https://baotanglichsu.vn/vi/Articles/3101/18781/hai-chau-got-ngoc.html',
+  },
+  {
+    keywords: ['dai ngoc'], src: '/images/museum/dai-ngoc-photo.jpg', contain: true,
+    title: 'Các phiến đai ngọc bọc vàng nạm đá quý — chi tiết trang trí của đai lưng',
+    author: 'Đại Dương · Dân Trí / Bảo tàng Lịch sử Quốc gia',
+    sourceUrl: 'https://baotanglichsu.vn/vi/Articles/3091/18045/tinh-xao-trang-suc-co-viet-nam.html',
+  },
+  {
+    keywords: ['kieng'], src: '/images/museum/kieng-photo.jpg', contain: true,
+    title: 'Vòng cổ bạc thế kỷ XIX–XX trong sưu tập trang sức triều Nguyễn',
+    author: 'Đại Dương · Dân Trí / Bảo tàng Lịch sử Quốc gia',
+    sourceUrl: 'https://baotanglichsu.vn/vi/Articles/3091/18045/tinh-xao-trang-suc-co-viet-nam.html',
+  },
+  {
+    keywords: ['tram cai'], src: '/images/museum/tram-photo.jpg', contain: true,
+    title: 'Trâm hoa thời chúa Nguyễn, thế kỷ XVIII',
+    author: 'Đại Dương · Dân Trí / Bảo tàng Lịch sử Quốc gia',
+    sourceUrl: 'https://baotanglichsu.vn/vi/Articles/3091/18045/tinh-xao-trang-suc-co-viet-nam.html',
+  },
+  {
+    keywords: ['kim khanh', 'kim bai'], src: '/images/museum/kim-khanh-photo.jpg', contain: true,
+    title: 'Kim khánh Ân tứ bằng vàng nạm ngọc trai',
+    author: 'Bảo tàng Lịch sử Quốc gia · bài Trần Đức Anh Sơn',
+    sourceUrl: 'https://baotanglichsu.vn/vi/Articles/3101/19023/kim-bai-kim-khanh-ngoc-khanh-thoi-nguyen.html',
+  },
+  {
+    keywords: ['ao yem'], src: '/images/museum/ao-yem-color.jpg', contain: true,
+    title: 'Ảnh màu phụ nữ Hà Nội mặc áo yếm, Léon Busy, thập niên 1910',
+    author: 'Léon Busy / Musée départemental Albert-Kahn',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Two_girls_sitting_near_the_tank_wore_the_traditional_costume_-_white_brassiere,_black_pants,_light-colored_belt_and_conical_hat_-_L%C3%A9on_Busy_(1874-1951).jpg',
+    license: 'Public domain',
+    licenseUrl: 'https://commons.wikimedia.org/wiki/Public_domain',
+  },
+  {
+    keywords: ['hoang bao'], src: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Bao_Dai_imperial_robe_private_collection_EDAV.jpg', contain: true,
+    title: 'Cận cảnh long bào của vua Bảo Đại trong bộ sưu tập tư nhân; ảnh chi tiết, không thể hiện toàn bộ áo',
+    author: 'Marie-Lan Nguyen / Wikimedia Commons',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Bao_Dai_imperial_robe_private_collection_EDAV.jpg',
+    license: 'Public domain', licenseUrl: 'https://commons.wikimedia.org/wiki/Public_domain',
+  },
+  {
+    keywords: ['canh chuon', 'phoc dau', 'o sa'], src: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Official_hat%2C_Nguyen_dynasty%2C_19th_to_early_20th_century%2C_gilded_metal_-_National_Museum_of_Vietnamese_History_-_Hanoi%2C_Vietnam_-_DSC05595.JPG', contain: true,
+    title: 'Mũ quan triều Nguyễn thế kỷ XIX–đầu XX bằng kim loại thếp vàng, có hai cánh dài',
+    author: 'Daderot / Wikimedia Commons',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Official_hat,_Nguyen_dynasty,_19th_to_early_20th_century,_gilded_metal_-_National_Museum_of_Vietnamese_History_-_Hanoi,_Vietnam_-_DSC05595.JPG',
+    license: 'CC0 1.0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+  },
   {
     keywords: ['ao ba ba'], src: '/images/museum/ao-ba-ba.jpg',
     title: 'Bộ bà ba Bến Tre, 1968, tại Bảo tàng Phụ nữ Việt Nam', author: 'Daderot',

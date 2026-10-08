@@ -19,6 +19,12 @@ public class CulturalItem {
     @Column(nullable = false, length = 50)
     private String category; // GARMENT, ACCESSORY, REGION, PERIOD, CEREMONY
 
+    @Column(name = "item_type", length = 50)
+    private String itemType;
+
+    @Column(name = "usage_category", length = 100)
+    private String usageCategory;
+
     @Column(length = 50)
     private String region;
 
@@ -56,6 +62,12 @@ public class CulturalItem {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getItemType() { return itemType; }
+    public void setItemType(String itemType) { this.itemType = itemType; }
+
+    public String getUsageCategory() { return usageCategory; }
+    public void setUsageCategory(String usageCategory) { this.usageCategory = usageCategory; }
 
     public String getRegion() { return region; }
     public void setRegion(String region) { this.region = region; }

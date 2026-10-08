@@ -5,7 +5,8 @@ export interface RentalItemResponse {
   id: number;
   name: string;
   category: string;
-  pricePerDay: number;
+  pricePerDay: number | null;
+  priceDisplay: string | null;
   availabilityStatus: string;
 }
 
@@ -18,7 +19,6 @@ export interface RentalProviderResponse {
   longitude?: number;
   phone?: string;
   website?: string;
-  isDemoData: boolean;
   items: RentalItemResponse[];
 }
 

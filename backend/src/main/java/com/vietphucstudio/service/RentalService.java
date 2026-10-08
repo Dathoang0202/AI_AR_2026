@@ -47,11 +47,9 @@ public class RentalService {
         res.setLongitude(provider.getLongitude());
         res.setPhone(provider.getPhone());
         res.setWebsite(provider.getWebsite());
-        res.setIsDemoData(provider.getIsDemoData());
-
         if (provider.getItems() != null) {
             res.setItems(provider.getItems().stream()
-                    .map(i -> new RentalItemResponse(i.getId(), i.getName(), i.getCategory(), i.getPricePerDay(), i.getAvailabilityStatus()))
+                    .map(i -> new RentalItemResponse(i.getId(), i.getName(), i.getCategory(), i.getPricePerDay(), i.getPriceDisplay(), i.getAvailabilityStatus()))
                     .toList());
         } else {
             res.setItems(List.of());
