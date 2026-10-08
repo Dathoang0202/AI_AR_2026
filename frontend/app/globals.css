@@ -23,3 +23,4 @@
     font-family: var(--font-sans), 'Be Vietnam Pro', sans-serif;
   }
 }
+.museum-illustration-label { position: absolute; bottom: 12px; left: 12px; max-width: calc(100% - 62px); border: 1px solid #c9b69a; border-radius: 3px; padding: 5px 8px; background: #fffaf0f5; color: #655035; font: 10px/1.4 var(--font-sans), sans-serif; pointer-events: none; }

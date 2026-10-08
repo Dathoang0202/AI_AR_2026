@@ -58,13 +58,15 @@ class WorkbookCulturalImportTest {
                 assertEquals("/images/museum/ao-yem-color.jpg", actual.get("imageUrl").asText());
                 assertTrue(actual.get("sources").toString().contains("Two_girls_sitting_near_the_tank"));
             } else if (name.equals("Hoàng Bào")) {
-                assertEquals("https://upload.wikimedia.org/wikipedia/commons/9/90/Bao_Dai_imperial_robe_private_collection_EDAV.jpg", actual.get("imageUrl").asText());
+                assertEquals("/images/museum/hoang-bao-photo.jpg", actual.get("imageUrl").asText());
                 assertTrue(actual.get("sources").toString().contains("Bao_Dai_imperial_robe_private_collection_EDAV"));
             } else if (name.equals("Mũ Cánh Chuồn (Phốc Đầu / Ô Sa)")) {
-                assertEquals("https://upload.wikimedia.org/wikipedia/commons/2/20/Official_hat%2C_Nguyen_dynasty%2C_19th_to_early_20th_century%2C_gilded_metal_-_National_Museum_of_Vietnamese_History_-_Hanoi%2C_Vietnam_-_DSC05595.JPG", actual.get("imageUrl").asText());
+                assertEquals("/images/museum/canh-chuon-photo.jpg", actual.get("imageUrl").asText());
                 assertTrue(actual.get("sources").toString().contains("Official_hat,_Nguyen_dynasty"));
             } else {
-                assertTrue(actual.path("imageUrl").isNull() || actual.path("imageUrl").isMissingNode());
+                String image = actual.path("imageUrl").asText();
+                assertTrue(image.startsWith("/images/museum/"), name);
+                assertTrue(java.nio.file.Files.isRegularFile(java.nio.file.Path.of("../frontend/public" + image)), image);
             }
             assertEquals(row.get("source_title"), actual.get("sources").get(0).get("title"));
             assertEquals(row.get("source_url"), actual.get("sources").get(0).get("url"));
@@ -103,7 +105,7 @@ class WorkbookCulturalImportTest {
             before = snapshot(connection);
         }
         Flyway latest = Flyway.configure().dataSource(url, "sa", "").load();
-        assertEquals(6, latest.migrate().migrationsExecuted);
+        assertEquals(7, latest.migrate().migrationsExecuted);
         latest.validate();
         try (Connection connection = DriverManager.getConnection(url, "sa", ""); var statement = connection.createStatement()) {
             Map<Long, String> after = snapshot(connection);
@@ -130,7 +132,7 @@ class WorkbookCulturalImportTest {
             try (var connection = DriverManager.getConnection(url, "sa", ""); var statement = connection.createStatement()) {
                 if (custom) statement.executeUpdate("UPDATE cultural_items SET historical_period = 'Curated period', image_url = '/custom.jpg' WHERE name = 'Áo Trấn Thủ'");
                 Flyway latest = Flyway.configure().dataSource(url, "sa", "").load();
-                assertEquals(5, latest.migrate().migrationsExecuted);
+                assertEquals(6, latest.migrate().migrationsExecuted);
                 latest.validate();
                 try (var rows = statement.executeQuery("SELECT historical_period, image_url FROM cultural_items WHERE name = 'Áo Trấn Thủ'")) {
                     assertTrue(rows.next());

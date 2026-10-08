@@ -67,19 +67,20 @@ const api=process.env.TEST_API_URL || 'http://localhost:8081/api/v1';
  const svgIds=await page.locator('svg [id]').evaluateAll(nodes=>nodes.map(x=>x.id));
  assert.equal(new Set(svgIds).size,svgIds.length,'Wardrobe and mannequin SVG IDs must not collide');
 
- // Every museum detail uses a real photo or an explicit pending state, never a Studio drawing.
- let photos=0,pending=0;
+ // All museum records have an image; illustrations must be visibly identified.
+ let photos=0,illustrations=0;
  for(const item of catalog){
   await page.goto(web+'/cultural/'+item.id,{waitUntil:'networkidle'});
   await expect(page.locator('#artifact-title')).toHaveText(item.name);
   const frame=page.locator('.museum-detail-image');
-  if(await frame.locator('img').count()){
-   const img=frame.locator('img');assert.ok(!(await img.getAttribute('src')).endsWith('.svg'));
-   await expect.poll(()=>img.evaluate(el=>el.complete&&el.naturalWidth>0)).toBe(true);photos++;
-  }else{await expect(frame.locator('.museum-image-placeholder')).toBeVisible();pending++;}
+  const img=frame.locator('img');await expect(img).toBeVisible();
+  await expect.poll(()=>img.evaluate(el=>el.complete&&el.naturalWidth>0)).toBe(true);
+  if(await frame.locator('.museum-illustration-label').count()){
+   await expect(frame.locator('.museum-illustration-label')).toBeVisible();illustrations++;
+  }else{assert.ok(!(await img.getAttribute('src')).endsWith('.svg'));photos++;}
  }
- assert.equal(photos,25);assert.equal(pending,10);
- console.log('PASS: cultural status after gender/context changes, actionable adjustments, new context suggestions to Studio; museum 25 real photos / 10 pending; unique SVG IDs.');
+ assert.equal(photos,26);assert.equal(illustrations,9);
+ console.log('PASS: cultural status after gender/context changes, actionable adjustments, new context suggestions to Studio; museum 35 images including 9 labelled illustrations; unique SVG IDs.');
 
  assert.deepEqual(errors,[]);console.log('PASS: 35 graphic thumbnails; no museum photo/body in wardrobe; hat/fan both genders; select/remove; museum photo retained; mobile.');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

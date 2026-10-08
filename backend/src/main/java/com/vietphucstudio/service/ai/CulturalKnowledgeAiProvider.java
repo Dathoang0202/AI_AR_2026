@@ -18,9 +18,9 @@ import java.util.UUID;
 @Service
 public class CulturalKnowledgeAiProvider implements AiProvider {
     private final CulturalKnowledgeService knowledgeService;
-    private final OpenAiTextClient textClient;
+    private final GeminiTextClient textClient;
 
-    public CulturalKnowledgeAiProvider(CulturalKnowledgeService knowledgeService, OpenAiTextClient textClient) {
+    public CulturalKnowledgeAiProvider(CulturalKnowledgeService knowledgeService, GeminiTextClient textClient) {
         this.knowledgeService = knowledgeService;
         this.textClient = textClient;
     }
@@ -49,6 +49,7 @@ public class CulturalKnowledgeAiProvider implements AiProvider {
         List<CulturalSourceDto> sources = uniqueSources(items);
         String instructions = buildInstructions(items);
         String answer = textClient.generate(instructions, history, question).orElse(null);
+        boolean generated = answer != null;
         if (answer == null) {
             answer = fallbackAnswer(question, items);
             if (!items.isEmpty()) answer = "Dựa trên dữ liệu di sản hiện có: " + answer;
@@ -56,7 +57,9 @@ public class CulturalKnowledgeAiProvider implements AiProvider {
         List<String> actions = items.isEmpty()
                 ? List.of("Tìm hiểu Áo Nhật Bình", "Tìm hiểu Áo Tấc", "Gợi ý phối đồ đi lễ hội")
                 : List.of("Tìm hiểu thêm về " + items.get(0).getName(), "Gợi ý phối đồ với " + items.get(0).getName());
-        return new AssistantResponse(answer, conversationId, sources, actions);
+        AssistantResponse response = new AssistantResponse(answer, conversationId, sources, actions);
+        response.setAnswerMode(generated ? "gemini" : "knowledge");
+        return response;
     }
 
     private boolean isFollowUp(String question) {

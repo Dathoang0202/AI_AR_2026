@@ -8,7 +8,8 @@ The original museum illustration assets come from the user-provided
 These are design illustrations, not authenticated artifact photographs.
 The UI prefers curated local assets for the twelve seeded records so that no human faces
 appear in the museum, wardrobe, or outfit suggestions. New catalog records without
-a local match use their API image. There are no visible illustration badges.
+a local match use their API image. Illustrations carry a visible label on cards,
+detail images and the lightbox, with an explanation in the sources tab.
 
 The following photographs were added on 2026-09-30, with no retouching.
 Cards use a CSS crop; detail pages and the lightbox preserve the full photograph.
@@ -45,8 +46,9 @@ reference, not as a dated museum accession.
 | --- | --- | --- | --- | --- |
 | `ao-yem-color.jpg` | [Color photo of Hanoi women wearing a white brassiere and black pants, 1910s](https://commons.wikimedia.org/wiki/File:Two_girls_sitting_near_the_tank_wore_the_traditional_costume_-_white_brassiere,_black_pants,_light-colored_belt_and_conical_hat_-_L%C3%A9on_Busy_(1874-1951).jpg) | Léon Busy / Musée départemental Albert-Kahn | Public domain in Vietnam | 640 × 467 |
 
-Two further Commons photographs are linked directly rather than copied into this
-directory. The robe photograph is a close-up of embroidery, not a full-garment
+Two further Commons photographs are cached in this directory as
+`hoang-bao-photo.jpg` and `canh-chuon-photo.jpg` (960 px Wikimedia thumbnails).
+The robe photograph is a close-up of embroidery, not a full-garment
 view; it is used only as a detail reference. The hat is an actual Nguyễn-dynasty
 museum object with long side wings.
 
@@ -77,6 +79,23 @@ Studio and Lookbook use code-native, simplified garment shapes and accessories.
 The Thai example is kept specific to Thanh Hóa, with a cultural review notice;
 its simplified textile bands do not reproduce or authenticate particular motifs.
 
-If a curated local image fails, the UI displays a text placeholder instead of
-falling back to an older portrait URL. Original source links remain in the detail
+If a curated local image fails, the UI uses a labelled catalog illustration when
+available, otherwise a text placeholder. Original source links remain in the detail
 page's sources tab; attribution is not a grant of reproduction rights.
+
+Catalog completion on 2026-10-08 adds three unretouched product photos. These are
+contemporary products, not authenticated historical artifacts; no open license
+is stated on their source pages.
+
+| Local file | Source page | Original image | Credit |
+| --- | --- | --- | --- |
+| `vien-linh-photo.jpg` | [Áo viên lĩnh](https://www.saigonaodai.net/shop/ao-vien-linh/) | [Blue robe on a display stand](https://i1.wp.com/www.saigonaodai.net/wp-content/uploads/2020/05/ao-vien-linh-4.jpg?fit=600%2C900&ssl=1) | Áo Dài Cô Sáu |
+| `doi-kham-photo.jpg` | [Áo đối khâm](https://www.saigonaodai.net/shop/ao-doi-kham/) | [White robe on a display stand](https://i1.wp.com/www.saigonaodai.net/wp-content/uploads/2020/07/doi-kham-mau-trang.jpg?fit=600%2C895&ssl=1) | Áo Dài Cô Sáu |
+| `guoc-moc-photo.jpg` | [Product catalog](https://guocmoc.com.vn/shop/) | [Wooden clog with brocade strap](https://guocmoc.com.vn/wp-content/uploads/2023/08/Guoc-go-quai-gam.jpg) | Guốc Mộc Sài Gòn |
+
+With the user's explicit approval, seven formerly empty records use the existing
+code-native illustrations: `co-man.svg`, `phuong-bao.svg`, `bien-phuc.svg`,
+`vat-ho.svg`, `ngu-lam.svg`, `thu-kham.svg`, and `mo-qua.svg`. They describe the
+catalog silhouettes only; colors and motifs are schematic. In particular, the
+Cổ Mãn, Biền Phục, Thụ Khâm and Ngự Lâm names still require independent historical
+verification. A visible “Hình minh họa” badge distinguishes these images from photos.

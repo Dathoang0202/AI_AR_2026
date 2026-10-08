@@ -1,4 +1,5 @@
 import type { CulturalItemResponse } from '@/services/culturalApi';
+import { workbookVisual } from './workbookCatalog';
 
 export function normalizeCulturalText(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
@@ -22,7 +23,15 @@ export function getMuseumImage(name: string, variant: 'card' | 'detail' = 'card'
   const normalized = normalizeCulturalText(name);
   if (normalized.includes('nhat binh')) return variant === 'detail' ? '/images/museum/nhat-binh-detail.jpg' : '/images/museum/nhat-binh.jpg';
   if (normalized.includes('giao linh')) return '/images/museum/giao-linh.jpg';
-  return getMuseumPhoto(name)?.src;
+  return getMuseumPhoto(name)?.src || getMuseumIllustration(name);
+}
+
+export function getMuseumIllustration(name: string) {
+  const normalized = normalizeCulturalText(name);
+  if (normalized.includes('nhat binh')) return '/images/museum/nhat-binh.jpg';
+  if (normalized.includes('giao linh')) return '/images/museum/giao-linh.jpg';
+  const drawing = workbookVisual(normalized);
+  return drawing ? `/images/museum/${drawing.kind}.svg` : undefined;
 }
 
 interface MuseumPhoto {
@@ -37,6 +46,21 @@ interface MuseumPhoto {
 }
 
 const museumPhotos: MuseumPhoto[] = [
+  {
+    keywords: ['vien linh'], src: '/images/museum/vien-linh-photo.jpg', contain: true,
+    title: 'Áo viên lĩnh xanh trên giá trưng bày — sản phẩm may hiện đại',
+    author: 'Áo Dài Cô Sáu', sourceUrl: 'https://www.saigonaodai.net/shop/ao-vien-linh/',
+  },
+  {
+    keywords: ['doi kham'], src: '/images/museum/doi-kham-photo.jpg', contain: true,
+    title: 'Áo đối khâm trắng trên giá trưng bày — sản phẩm may hiện đại',
+    author: 'Áo Dài Cô Sáu', sourceUrl: 'https://www.saigonaodai.net/shop/ao-doi-kham/',
+  },
+  {
+    keywords: ['guoc moc'], src: '/images/museum/guoc-moc-photo.jpg', contain: true,
+    title: 'Guốc gỗ quai gấm — ảnh sản phẩm thủ công hiện đại',
+    author: 'Guốc Mộc Sài Gòn', sourceUrl: 'https://guocmoc.com.vn/shop/',
+  },
   {
     keywords: ['bo tu'], src: '/images/museum/bo-tu-photo.jpg', contain: true,
     title: 'Chi tiết bổ tử trên phẩm phục triều Nguyễn — ảnh trang trí trên áo, không phải toàn bộ áo',
@@ -106,14 +130,14 @@ const museumPhotos: MuseumPhoto[] = [
     licenseUrl: 'https://commons.wikimedia.org/wiki/Public_domain',
   },
   {
-    keywords: ['hoang bao'], src: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Bao_Dai_imperial_robe_private_collection_EDAV.jpg', contain: true,
+    keywords: ['hoang bao'], src: '/images/museum/hoang-bao-photo.jpg', contain: true,
     title: 'Cận cảnh long bào của vua Bảo Đại trong bộ sưu tập tư nhân; ảnh chi tiết, không thể hiện toàn bộ áo',
     author: 'Marie-Lan Nguyen / Wikimedia Commons',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Bao_Dai_imperial_robe_private_collection_EDAV.jpg',
     license: 'Public domain', licenseUrl: 'https://commons.wikimedia.org/wiki/Public_domain',
   },
   {
-    keywords: ['canh chuon', 'phoc dau', 'o sa'], src: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Official_hat%2C_Nguyen_dynasty%2C_19th_to_early_20th_century%2C_gilded_metal_-_National_Museum_of_Vietnamese_History_-_Hanoi%2C_Vietnam_-_DSC05595.JPG', contain: true,
+    keywords: ['canh chuon', 'phoc dau', 'o sa'], src: '/images/museum/canh-chuon-photo.jpg', contain: true,
     title: 'Mũ quan triều Nguyễn thế kỷ XIX–đầu XX bằng kim loại thếp vàng, có hai cánh dài',
     author: 'Daderot / Wikimedia Commons',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Official_hat,_Nguyen_dynasty,_19th_to_early_20th_century,_gilded_metal_-_National_Museum_of_Vietnamese_History_-_Hanoi,_Vietnam_-_DSC05595.JPG',

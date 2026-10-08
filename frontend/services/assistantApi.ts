@@ -9,6 +9,7 @@ export interface AssistantRequest {
 
 export interface AssistantResponse {
   answer: string;
+  answerMode: 'gemini' | 'knowledge';
   conversationId: string;
   sources: CulturalSource[];
   suggestedActions: string[];

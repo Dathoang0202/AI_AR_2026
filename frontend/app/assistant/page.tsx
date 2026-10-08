@@ -14,6 +14,7 @@ import './assistant.css';
 interface ChatMessage {
   sender: 'user' | 'assistant';
   text: string;
+  answerMode?: 'gemini' | 'knowledge';
   sources?: CulturalSource[];
   suggestedActions?: string[];
 }
@@ -111,6 +112,7 @@ export default function AssistantPage() {
       setMessages(previous => [...previous, {
         sender: 'assistant',
         text: response.data!.answer,
+        answerMode: response.data!.answerMode,
         sources: response.data!.sources,
         suggestedActions: response.data!.suggestedActions,
       }]);
@@ -214,6 +216,7 @@ export default function AssistantPage() {
                       {message.sender === 'assistant' && <div className="assistant-message-author"><Flower2 size={17} strokeWidth={1.5} aria-hidden="true" /><span>Trợ lý Việt Phục</span></div>}
                       {message.sender === 'user' ? <p className="assistant-user-text">{message.text}</p> : <AnswerText text={message.text} />}
                       {message.sender === 'assistant' && <>
+                        <p className="assistant-answer-mode">{message.answerMode === 'gemini' ? 'Trả lời bằng Gemini' : 'Trả lời từ tư liệu bảo tàng · AI hiện chưa khả dụng'}</p>
                         <Sources sources={message.sources ?? []} />
                         {index === messages.length - 1 && !!message.suggestedActions?.length && (
                           <div className="assistant-followups">

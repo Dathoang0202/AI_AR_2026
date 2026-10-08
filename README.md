@@ -23,7 +23,7 @@
    - Tra cứu nhà cung cấp dịch vụ cho thuê theo khu vực địa lý, xem bảng giá theo ngày và nút liên hệ trực tiếp.
 
 6. **Trợ Lý AI Di Sản (AI Cultural Assistant)**:
-   - Hỏi đáp nhiều lượt về Việt phục, dùng các mục di sản liên quan làm ngữ cảnh. Khi cấu hình OpenAI, trợ lý tạo câu trả lời linh hoạt; nếu chưa cấu hình hoặc dịch vụ lỗi, trợ lý trả lời từ dữ liệu có sẵn.
+   - Hỏi đáp nhiều lượt về Việt phục bằng Gemini, dùng các mục di sản liên quan làm ngữ cảnh. Khi chưa cấu hình hoặc dịch vụ lỗi, trợ lý trả lời từ dữ liệu có sẵn và ghi rõ chế độ trả lời.
 
 ---
 
@@ -41,7 +41,11 @@
 
 ### 1. Khởi chạy Backend (Port 8080):
 
-Để bật câu trả lời AI, đặt biến môi trường `OPENAI_API_KEY` trên máy chạy backend. Có thể đổi mô hình bằng `OPENAI_MODEL` (mặc định `gpt-5.4-mini`). Không đưa khóa API vào frontend hoặc commit vào Git. Khi không có khóa, trang chat vẫn chạy ở chế độ dữ liệu di sản.
+Để bật câu trả lời AI bằng Gemini, sao chép `backend/.env.example` thành `backend/.env.local` rồi điền `GEMINI_API_KEY`. Backend tự đọc file này khi chạy từ thư mục gốc hoặc `backend`; khởi động lại backend sau khi đổi key. Có thể dùng biến môi trường `GEMINI_API_KEY` và `GEMINI_MODEL` trên máy chủ (ưu tiên hơn file). Model mặc định là `gemini-3.1-flash-lite`.
+
+Lấy key tại [Google AI Studio](https://aistudio.google.com/apikey). Tích hợp dùng [Gemini generateContent REST API](https://ai.google.dev/api/generate-content); chỉ backend gửi key qua header `x-goog-api-key`. Không đưa key vào frontend hoặc commit vào Git. `.env.local` đã được loại khỏi Git. Khi thiếu key, hết hạn mức, mất kết nối hoặc Gemini không trả lời hoàn chỉnh, chat dùng dữ liệu bảo tàng và hiển thị trạng thái tương ứng. API trả `answerMode: gemini | knowledge` để phân biệt hai chế độ.
+
+Kiểm tra tích hợp khi hai dịch vụ đang chạy: từ `frontend`, chạy `node scripts/verify-museum-gemini.cjs` (cần Playwright/Chrome, hoặc đặt `PLAYWRIGHT_MODULE` tới module đã cài). Script kiểm tra 35 ảnh, nhãn minh họa, trang chi tiết, phóng to, phục hồi ảnh lỗi, giao diện điện thoại và gửi hai câu hỏi Gemini thật. Có thể đổi địa chỉ bằng `TEST_WEB_URL` và `TEST_API_URL`.
 
 ```bash
 cd backend

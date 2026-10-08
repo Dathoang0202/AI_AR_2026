@@ -6,6 +6,7 @@ import java.util.List;
 public class AssistantResponse {
 
     private String answer;
+    private String answerMode;
     private String conversationId;
     private List<CulturalSourceDto> sources;
     private List<String> suggestedActions;
@@ -20,6 +21,8 @@ public class AssistantResponse {
     }
 
     public String getAnswer() { return answer; }
+    public String getAnswerMode() { return answerMode; }
+    public void setAnswerMode(String answerMode) { this.answerMode = answerMode; }
     public void setAnswer(String answer) { this.answer = answer; }
 
     public String getConversationId() { return conversationId; }

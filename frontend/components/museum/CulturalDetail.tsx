@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, ArrowLeft, ArrowUpRight, BookOpen, Check, ChevronRight, ExternalLink, Landmark, Loader2, RotateCcw, Search, Share2, Shirt, X, ZoomIn } from 'lucide-react';
 import { CulturalItemResponse, getCulturalItemById, getCulturalItems } from '@/services/culturalApi';
-import { categoryLabel, getMuseumPhoto, safeSourceUrl } from '@/lib/cultural';
+import { categoryLabel, getMuseumIllustration, getMuseumPhoto, safeSourceUrl } from '@/lib/cultural';
 import { hasStudioPreview, museumStudioHref } from '@/lib/outfit';
 import { ArtifactImage } from './ArtifactImage';
 import { ArtifactCard } from './ArtifactCard';
@@ -133,6 +133,7 @@ export function CulturalDetail({ id }: { id: number }) {
             <h4><a href={photo.sourceUrl} target="_blank" rel="noopener noreferrer">{photo.title} <ExternalLink size={14} /></a></h4>
             <p>{photo.author}{photo.license && <> · <a href={photo.licenseUrl} target="_blank" rel="noopener noreferrer">{photo.license}</a></>}</p>
           </div>}
+          {!photo && getMuseumIllustration(item.name) && <div className="museum-photo-source"><span className="museum-eyebrow">VỀ HÌNH MINH HỌA</span><p>Hình diễn tả phom dáng theo mô tả danh mục, với màu sắc và hoa văn giản lược. Đây là hình minh họa, không phải ảnh hiện vật hoặc bản phục dựng lịch sử đã được xác thực.</p></div>}
           {drawing && <div className="museum-photo-source"><span className="museum-eyebrow">VỀ HÌNH MẶC THỬ TRONG STUDIO</span><p>Hình đồ họa trong Studio diễn tả phom dáng theo mô tả trong danh mục. Màu sắc và hoa văn được giản lược để mặc thử; không phải bản phục dựng một phẩm cấp, triều đại cụ thể.</p>{['co-man', 'bien-phuc', 'thu-kham', 'ngu-lam'].includes(drawing.kind) && <p>Tên gọi và biến thể của mục này còn cần tư liệu riêng để đối chiếu. Nội dung hiện tại giữ theo tài liệu được cung cấp.</p>}</div>}
         </div>}
       </div>

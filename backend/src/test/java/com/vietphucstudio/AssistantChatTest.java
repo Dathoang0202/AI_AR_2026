@@ -7,7 +7,7 @@ import com.vietphucstudio.entity.CulturalSource;
 import com.vietphucstudio.repository.CulturalItemRepository;
 import com.vietphucstudio.service.CulturalKnowledgeService;
 import com.vietphucstudio.service.ai.CulturalKnowledgeAiProvider;
-import com.vietphucstudio.service.ai.OpenAiTextClient;
+import com.vietphucstudio.service.ai.GeminiTextClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -76,11 +76,11 @@ class AssistantChatTest {
         return item;
     }
 
-    private static class RecordingTextClient extends OpenAiTextClient {
+    private static class RecordingTextClient extends GeminiTextClient {
         private List<ChatTurn> history;
 
         RecordingTextClient() {
-            super(new ObjectMapper(), "", "gpt-5.4-mini");
+            super(new ObjectMapper(), "", "gemini-3.1-flash-lite");
         }
 
         @Override

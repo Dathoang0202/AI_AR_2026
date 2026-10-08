@@ -151,3 +151,4 @@
 @media (prefers-reduced-motion: reduce) {
   .assistant-page *, .assistant-page *::before { animation: none !important; transition: none !important; }
 }
+.assistant-answer-mode { margin: 12px 0; color: #786a5d; font-size: 11px; }

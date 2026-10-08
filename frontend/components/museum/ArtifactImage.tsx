@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ImageOff, Landmark } from 'lucide-react';
-import { getMuseumImage, getMuseumPhoto, safeSourceUrl } from '@/lib/cultural';
+import { getMuseumImage, getMuseumIllustration, getMuseumPhoto, safeSourceUrl } from '@/lib/cultural';
 
 interface ArtifactImageProps {
   name: string;
@@ -20,9 +20,12 @@ function ImageContent({ name, src, priority, variant }: ArtifactImageProps) {
   const [failedSources, setFailedSources] = useState<string[]>([]);
   const curatedImage = getMuseumImage(name, variant);
   const photo = getMuseumPhoto(name);
+  const illustration = getMuseumIllustration(name);
   const original = src?.startsWith('/') && !src.startsWith('//') ? src : safeSourceUrl(src);
-  // Curated local images show garments without human faces. Do not fall back to old portrait URLs.
-  const activeSource = (curatedImage ? [curatedImage] : [original]).find(source => source && !failedSources.includes(source));
+  // Keep an explicitly labelled drawing available when a curated photo cannot load.
+  // Old API portraits are not used in place of an approved catalog image.
+  const activeSource = (curatedImage ? [curatedImage, illustration] : [original]).find(source => source && !failedSources.includes(source));
+  const isIllustration = !!activeSource && (activeSource === illustration || (!photo && !!illustration));
 
   if (!activeSource) return (
     <div className="museum-image-placeholder" role="img" aria-label={`Chưa có hình ảnh ${name}`}>
@@ -33,6 +36,7 @@ function ImageContent({ name, src, priority, variant }: ArtifactImageProps) {
   return <>
     {/* The API accepts arbitrary image hosts; retain the source without Next image host restrictions. */}
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src={activeSource} style={photo?.contain ? { objectFit: 'contain' } : undefined} alt={name} loading={priority ? 'eager' : 'lazy'} decoding="async" onError={() => setFailedSources(previous => [...previous, activeSource])} />
+    <img src={activeSource} style={photo?.contain || isIllustration ? { objectFit: 'contain' } : undefined} alt={isIllustration ? `Hình minh họa ${name}` : name} loading={priority ? 'eager' : 'lazy'} decoding="async" onError={() => setFailedSources(previous => [...previous, activeSource])} />
+    {isIllustration && <span className="museum-illustration-label" title="Hình minh họa phom dáng; không phải ảnh hiện vật hoặc bản phục dựng lịch sử.">Hình minh họa</span>}
   </>;
 }
