@@ -58,7 +58,7 @@ export function CulturalDetail({ id }: { id: number }) {
   }, [item]);
 
   async function shareItem() {
-    const url = `${window.location.origin}/cultural/${id}`;
+    const url = `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ''}/cultural/detail/?id=${id}`;
     setShareUrl(url);
     try {
       await navigator.clipboard.writeText(url);

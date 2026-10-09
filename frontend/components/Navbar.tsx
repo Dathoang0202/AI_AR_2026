@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Sparkles, BookOpen, MapPin, Bookmark, MessageSquare, Shirt, User, LogOut } from 'lucide-react';
+import { publicUrl } from '@/lib/public-url';
 import './navbar.css';
 
 export const Navbar: React.FC = () => {
@@ -26,8 +27,8 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="site-navbar-brand" aria-label="vlaura — Trang chủ">
-            <span className="site-navbar-logo" aria-hidden="true" />
-            <span className="site-navbar-copy"><span className="site-navbar-wordmark" aria-hidden="true" /><small>VIETNAM LUXURY AURA</small></span>
+            <span className="site-navbar-logo" style={{ WebkitMaskImage: `url(${publicUrl('/images/vlaura-emblem.png')})`, maskImage: `url(${publicUrl('/images/vlaura-emblem.png')})` }} aria-hidden="true" />
+            <span className="site-navbar-copy"><span className="site-navbar-wordmark" style={{ WebkitMaskImage: `url(${publicUrl('/images/vlaura-header-wordmark.png')})`, maskImage: `url(${publicUrl('/images/vlaura-header-wordmark.png')})` }} aria-hidden="true" /><small>VIETNAM LUXURY AURA</small></span>
           </Link>
 
           {/* Nav Links */}

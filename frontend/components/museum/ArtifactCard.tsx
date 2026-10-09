@@ -5,7 +5,7 @@ import { categoryLabel } from '@/lib/cultural';
 import { ArtifactImage } from './ArtifactImage';
 
 export function ArtifactCard({ item, returnTo }: { item: CulturalItemResponse; returnTo?: string }) {
-  const href = `/cultural/${item.id}${returnTo ? `?from=${encodeURIComponent(returnTo)}` : ''}`;
+  const href = `/cultural/detail?id=${item.id}${returnTo ? `&from=${encodeURIComponent(returnTo)}` : ''}`;
   return (
     <Link href={href} className="museum-artifact-card" aria-label={`Khám phá ${item.name}`}>
       <div className="museum-artifact-image">

@@ -25,7 +25,7 @@ const api = process.env.TEST_API_URL || 'http://localhost:8081/api/v1';
   await page.screenshot({path:'node_modules/.cache/museum-final-desktop.png',fullPage:true});
   const newNames=['vien-linh-photo','doi-kham-photo','guoc-moc-photo','co-man.svg','phuong-bao.svg','bien-phuc.svg','vat-ho.svg','ngu-lam.svg','thu-kham.svg','mo-qua.svg','hoang-bao-photo','canh-chuon-photo'];
   for(const item of items.filter(i=>newNames.some(n=>i.imageUrl.includes(n)))) {
-   await page.goto(`${web}/cultural/${item.id}`,{waitUntil:'networkidle'});
+   await page.goto(`${web}/cultural/detail?id=${item.id}`,{waitUntil:'networkidle'});
    await expect(page.locator('.museum-detail-image > img')).toBeVisible();
    await expect.poll(()=>page.locator('.museum-detail-image > img').evaluate(i=>i.complete && i.naturalWidth>0)).toBe(true);
    await page.locator('.museum-detail-image').click();
@@ -36,14 +36,14 @@ const api = process.env.TEST_API_URL || 'http://localhost:8081/api/v1';
    await expect(page.locator('.museum-photo-source').first()).toBeVisible();
   }
   const illustrated=items.find(i=>i.imageUrl.endsWith('/co-man.svg'));
-  await page.goto(`${web}/cultural/${illustrated.id}`,{waitUntil:'networkidle'});
+  await page.goto(`${web}/cultural/detail?id=${illustrated.id}`,{waitUntil:'networkidle'});
   await page.setViewportSize({width:390,height:844});
   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile overflow');
   await page.screenshot({path:'node_modules/.cache/museum-final-mobile.png',fullPage:true});
   // Exercise failure recovery using real API data and one failed image request.
   await page.route('**/images/museum/vien-linh-photo.jpg',r=>r.abort());
   const vien=items.find(i=>i.imageUrl.endsWith('/vien-linh-photo.jpg'));
-  await page.goto(`${web}/cultural/${vien.id}`,{waitUntil:'networkidle'});
+  await page.goto(`${web}/cultural/detail?id=${vien.id}`,{waitUntil:'networkidle'});
   await expect(page.locator('.museum-detail-image > img')).toHaveAttribute('src','/images/museum/vien-linh.svg');
   await expect(page.locator('.museum-detail-image .museum-illustration-label')).toBeVisible();
   await page.unroute('**/images/museum/vien-linh-photo.jpg');

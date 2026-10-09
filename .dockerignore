@@ -1,0 +1,9 @@
+.git/
+.idea/
+**/.env
+**/.env.*
+backend/target/
+frontend/node_modules/
+frontend/.next/
+frontend/.next-dev/
+frontend/out/

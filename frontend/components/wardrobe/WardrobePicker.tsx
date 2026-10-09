@@ -54,7 +54,7 @@ export function WardrobePicker({ items, loading, error, onRetry, selectedIds, on
               <span className="block px-2 py-2"><span className="line-clamp-2 min-h-8 font-serif text-xs font-semibold leading-4 text-stone-900">{item.name}</span></span>
             </button>
             <Link
-              href={`/cultural/${item.id}`}
+              href={`/cultural/detail?id=${item.id}`}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Tìm hiểu thêm về ${item.name} trong bảo tàng (mở tab mới)`}

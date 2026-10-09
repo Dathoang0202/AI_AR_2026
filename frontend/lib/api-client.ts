@@ -1,6 +1,6 @@
 import { ApiResponse } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? (process.env.NEXT_PUBLIC_BASE_PATH ? '' : 'http://localhost:8080/api/v1');
 
 export function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -23,6 +23,9 @@ export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
+  if (!API_BASE_URL) {
+    return { success: false, error: { code: 'API_UNAVAILABLE', message: 'GitHub Pages chỉ lưu giao diện. Hãy cấu hình địa chỉ backend để dùng tính năng này.' } };
+  }
   const token = getStoredToken();
 
   const headers: Record<string, string> = {

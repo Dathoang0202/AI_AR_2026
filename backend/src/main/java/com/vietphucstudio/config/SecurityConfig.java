@@ -42,7 +42,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/error").permitAll()
+                .requestMatchers("/api/v1/health").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/outfits/recommend").permitAll()
@@ -50,7 +50,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/assistant/chat").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/cultural-items/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/rentals/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
             );
 
         // H2 console frame option

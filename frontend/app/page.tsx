@@ -33,7 +33,7 @@ export default function HomePage() {
       <Link href="/cultural" className="home-hero-art" aria-label="Khám phá câu chuyện y phục trong bảo tàng">
         <div className="home-hero-image">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/museum/nhat-binh-detail.jpg" alt="Y phục thêu sắc vàng trong không gian trưng bày" fetchPriority="high" />
+          <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/images/museum/nhat-binh-detail.jpg`} alt="Y phục thêu sắc vàng trong không gian trưng bày" fetchPriority="high" />
           <span className="home-art-label">VIỆT PHỤC / MỘT GÓC DI SẢN</span>
         </div>
         <div className="home-art-caption"><div><p>CHUYỆN KỂ QUA Y PHỤC</p><h2>Vẻ đẹp từ những điều được gìn giữ</h2></div><span><ArrowUpRight size={24} strokeWidth={1.5} /></span></div>
@@ -51,7 +51,7 @@ export default function HomePage() {
       <div className="home-section-heading"><div><p className="home-eyebrow">TỪ BỘ SƯU TẬP BẢO TÀNG</p><h2 id="home-collection-title">Mỗi nếp áo, một vẻ đẹp</h2><p>Gặp gỡ những dáng áo để bắt đầu hành trình của riêng bạn.</p></div><Link href="/cultural" className="home-text-link">Xem bộ sưu tập <ArrowRight size={16} /></Link></div>
       {catalog.loading ? <div className="home-collection-grid" role="status" aria-label="Đang tải bộ sưu tập">{[0, 1, 2, 3].map(value => <div className="home-collection-skeleton" key={value} />)}</div>
         : catalog.error ? <div className="home-state" role="alert"><p>Chưa tải được bộ sưu tập. Bạn thử lại nhé.</p><button onClick={catalog.retry}><RotateCcw size={15} />Tải lại bộ sưu tập</button></div>
-        : featured.length ? <div className="home-collection-grid">{featured.map(item => <Link key={item.id} href={`/cultural/${item.id}`} className="home-artifact" data-home-artifact={item.id}>
+        : featured.length ? <div className="home-collection-grid">{featured.map(item => <Link key={item.id} href={`/cultural/detail?id=${item.id}`} className="home-artifact" data-home-artifact={item.id}>
           <div className="home-artifact-image"><ArtifactImage name={item.name} src={item.imageUrl} /><span><ArrowUpRight size={19} /></span></div>
           <p className="home-artifact-period">{item.historicalPeriod}</p><h3>{item.name}</h3><p className="home-artifact-region">{item.region}</p>
         </Link>)}</div> : <div className="home-state"><BookOpen size={26} /><p>Bộ sưu tập đang được cập nhật. Bạn vẫn có thể khám phá các trải nghiệm bên dưới.</p></div>}

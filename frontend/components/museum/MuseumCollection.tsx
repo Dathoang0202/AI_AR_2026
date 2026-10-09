@@ -88,7 +88,7 @@ export function MuseumCollection() {
       </div>
       <figure className="museum-hero-visual">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/museum/gallery.jpg" alt="Không gian trưng bày y phục truyền thống với ánh sáng ấm và tủ kính" fetchPriority="high" />
+        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/images/museum/gallery.jpg`} alt="Không gian trưng bày y phục truyền thống với ánh sáng ấm và tủ kính" fetchPriority="high" />
         <figcaption><span className="museum-hero-caption-icon"><Landmark size={23} strokeWidth={1.4} /></span><div><strong>Dấu ấn y phục qua từng triều đại</strong><span>Một hành trình kết nối quá khứ và hiện tại</span></div></figcaption>
       </figure>
     </section>

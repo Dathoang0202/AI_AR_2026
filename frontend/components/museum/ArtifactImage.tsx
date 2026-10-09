@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ImageOff, Landmark } from 'lucide-react';
 import { getMuseumImage, getMuseumIllustration, getMuseumPhoto, safeSourceUrl } from '@/lib/cultural';
+import { publicUrl } from '@/lib/public-url';
 
 interface ArtifactImageProps {
   name: string;
@@ -36,7 +37,7 @@ function ImageContent({ name, src, priority, variant }: ArtifactImageProps) {
   return <>
     {/* The API accepts arbitrary image hosts; retain the source without Next image host restrictions. */}
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src={activeSource} style={photo?.contain || isIllustration ? { objectFit: 'contain' } : undefined} alt={isIllustration ? `Hình minh họa ${name}` : name} loading={priority ? 'eager' : 'lazy'} decoding="async" onError={() => setFailedSources(previous => [...previous, activeSource])} />
+    <img src={publicUrl(activeSource)} style={photo?.contain || isIllustration ? { objectFit: 'contain' } : undefined} alt={isIllustration ? `Hình minh họa ${name}` : name} loading={priority ? 'eager' : 'lazy'} decoding="async" onError={() => setFailedSources(previous => [...previous, activeSource])} />
     {isIllustration && <span className="museum-illustration-label" title="Hình minh họa phom dáng; không phải ảnh hiện vật hoặc bản phục dựng lịch sử.">Hình minh họa</span>}
   </>;
 }

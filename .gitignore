@@ -13,6 +13,8 @@ frontend/.next/
 frontend/.next-dev/
 frontend/build/
 frontend/dist/
+frontend/out/
+*.tsbuildinfo
 
 # Env & Secrets
 .env

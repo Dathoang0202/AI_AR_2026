@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowUp, ArrowUpRight, BookOpen } from 'lucide-react';
+import { publicUrl } from '@/lib/public-url';
 import './footer.css';
 
 const navigation = [
@@ -26,7 +27,7 @@ export function Footer() {
     <div className="site-footer-inner">
       <div className="site-footer-main">
         <div className="site-footer-brand">
-          <Link href="/" className="site-footer-logo" aria-label="vlaura — Trang chủ"><span className="site-footer-logo-art" aria-hidden="true" /><span className="sr-only">vlaura</span></Link>
+          <Link href="/" className="site-footer-logo" aria-label="vlaura — Trang chủ"><span className="site-footer-logo-art" style={{ backgroundImage: `url(${publicUrl('/images/vlaura-footer-logo.png')})` }} aria-hidden="true" /><span className="sr-only">vlaura</span></Link>
           <p className="site-footer-description">Khám phá câu chuyện y phục, thử những cách phối mới và giữ lại cảm hứng của bạn.</p>
         </div>
 

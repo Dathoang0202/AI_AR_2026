@@ -1,5 +1,7 @@
 # vlaura — khí chất thiên thu
 
+Triển khai: [giao diện tĩnh trên GitHub Pages](docs/DEPLOY_GITHUB_PAGES.md) hoặc [frontend và backend chung một dịch vụ Render](docs/DEPLOY_SINGLE_SERVICE.md).
+
 > **vlaura** là ứng dụng web hỗ trợ khám phá, gợi ý phối đồ, kiểm định chuẩn mực văn hóa nghi lễ và tra cứu tri thức di sản y phục truyền thống Việt Nam (*Áo Nhật Bình, Áo Giao Lĩnh, Áo Tấc, Áo Ngũ Thân, Áo Dài*).
 
 ---
@@ -60,3 +62,7 @@ npm run dev
 ```
 
 Mở trình duyệt tại: `http://localhost:3000`
+
+## Triển khai một website
+
+Project có thể build frontend và backend thành một Docker image, phục vụ giao diện và API trên cùng một Render Web Service. Xem [hướng dẫn triển khai một dịch vụ](docs/DEPLOY_SINGLE_SERVICE.md). Dữ liệu người dùng cần được lưu trong PostgreSQL độc lập với container.
