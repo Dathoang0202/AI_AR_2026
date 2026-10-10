@@ -32,6 +32,3 @@
 - **Database**: PostgreSQL / H2 In-Memory (Dev mode)
 - **Database Migration**: Flyway (`db/migration/V1` - `V4`)
 - **Testing**: JUnit 5, Mockito, Next.js static build checks
-
----
-Project có thể build frontend và backend thành một Docker image, phục vụ giao diện và API trên cùng một Render Web Service. Xem [hướng dẫn triển khai một dịch vụ](docs/DEPLOY_SINGLE_SERVICE.md). Dữ liệu người dùng cần được lưu trong PostgreSQL độc lập với container.
