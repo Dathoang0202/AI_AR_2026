@@ -25,6 +25,22 @@ Nếu trình duyệt báo lỗi CORS, kiểm tra `ALLOWED_ORIGINS` đúng **orig
 
 ## Các bước
 
+### Bật Gemini khi backend chạy trên Railway
+
+Key AI được backend đọc từ `GEMINI_API_KEY`; frontend chỉ gọi API của backend. Không cần đưa key vào bản build GitHub Pages.
+
+1. Trong Railway, chọn đúng project, environment và **service backend** đang cung cấp API cho website (không chọn service database).
+2. Mở **Variables → New Variable**, đặt tên `GEMINI_API_KEY` và nhập key trực tiếp trong Railway. Nếu key từng được chia sẻ trong chat hoặc mã nguồn công khai, thu hồi key đó trong Google AI Studio và tạo key mới trước khi cấu hình.
+3. Trong menu ba chấm của biến, chọn **Seal** để ẩn giá trị khỏi dashboard/API/CLI sau khi lưu. Backend vẫn nhận giá trị lúc chạy; hãy giữ bản sao riêng nếu cần dùng lại.
+4. Review và deploy các thay đổi biến môi trường, chờ backend hoạt động trở lại. Không cần build lại frontend khi chỉ thay key AI.
+5. Mở **Trợ lý AI**, gửi một câu hỏi về Việt phục và kiểm tra phản hồi API có `answerMode: "gemini"`. Nếu là `"knowledge"`, hệ thống đang dùng dữ liệu bảo tàng dự phòng; kiểm tra trạng thái key, hạn mức và logs backend. Không in key hoặc headers yêu cầu vào logs.
+
+`backend/.env.local` dùng cho máy cá nhân, đã bị loại khỏi Git và Docker build context; file này không tự được gửi lên Railway. Không đặt key trong `NEXT_PUBLIC_*` hoặc workflow build frontend.
+
+Tham khảo: [Railway Variables và Sealed Variables](https://docs.railway.com/variables), [bảo vệ Gemini API key](https://ai.google.dev/gemini-api/docs/api-key).
+
+### Triển khai giao diện
+
 1. Push các thay đổi trong repository lên nhánh `main`. Kiểm tra trên GitHub có `.github/workflows/pages.yml` và `frontend/next.config.js` mới.
 2. Trong repository GitHub, mở **Settings → Pages**. Tại **Build and deployment → Source**, đổi từ **Deploy from a branch** sang **GitHub Actions**. Không cần chọn thư mục `/ (root)`.
 3. Mở tab **Actions**, chọn **Deploy frontend to GitHub Pages**. Nếu chưa tự chạy sau khi push, chọn **Run workflow → main → Run workflow**.

@@ -9,7 +9,7 @@ import { publicUrl } from '@/lib/public-url';
 import './navbar.css';
 
 export const Navbar: React.FC = () => {
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/+$/, '') || '/';
   const { user, isAuthenticated, logout, openAuthModal } = useAuth();
 
   const navLinks = [
